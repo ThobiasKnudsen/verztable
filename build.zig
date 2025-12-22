@@ -142,6 +142,38 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
 
+    // Benchmark executable - always built with ReleaseFast for accurate measurements
+    const bench_mod = b.createModule(.{
+        .root_source_file = b.path("src/benchmark.zig"),
+        .target = target,
+        .optimize = .ReleaseFast, // Always use ReleaseFast for benchmarks
+    });
+
+    // Add C source file for Verstable wrapper
+    bench_mod.addCSourceFile(.{
+        .file = b.path("src/verstable_wrapper.c"),
+        .flags = &.{ "-std=c11", "-O3", "-DNDEBUG" },
+    });
+
+    // Add include paths for verstable.h and verstable_wrapper.h
+    bench_mod.addIncludePath(b.path("Verstable"));
+    bench_mod.addIncludePath(b.path("src"));
+
+    const bench_exe = b.addExecutable(.{
+        .name = "benchmark",
+        .root_module = bench_mod,
+    });
+
+    // Link libc for the C code
+    bench_exe.linkLibC();
+
+    b.installArtifact(bench_exe);
+
+    const bench_run = b.addRunArtifact(bench_exe);
+    bench_run.step.dependOn(b.getInstallStep());
+    const bench_step = b.step("benchmark", "Run performance benchmarks (ReleaseFast)");
+    bench_step.dependOn(&bench_run.step);
+
     // Just like flags, top level steps are also listed in the `--help` menu.
     //
     // The Zig build system is entirely implemented in userland, which means
