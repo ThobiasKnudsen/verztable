@@ -1,5 +1,7 @@
 // Header file for Verstable wrapper functions
-// Used by Zig to import the C function signatures
+// Unified naming: vt_{keytype}_{valtype}_{operation}
+// Key types: u64, u16, str
+// Val types: void (set), val4, val64, val256
 
 #ifndef VERSTABLE_WRAPPER_H
 #define VERSTABLE_WRAPPER_H
@@ -7,48 +9,214 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// Opaque type representing the Verstable map
-typedef struct {
-    size_t key_count;
-    size_t buckets_mask;
-    void *buckets;
-    uint16_t *metadata;
-} vt_u64_map;
+// ============================================================================
+// Common types
+// ============================================================================
 
-// Iterator type
+// Generic iterator (same layout for all map types)
 typedef struct {
     void *itr_data;
     uint16_t *metadatum;
     uint16_t *metadata_end;
     size_t home_bucket;
-} vt_wrapper_iter;
+} vt_generic_iter;
 
-// Initialize a new map
-void vt_wrapper_init(vt_u64_map *table);
+// Generic map structure (same layout for all)
+typedef struct {
+    size_t key_count;
+    size_t buckets_mask;
+    void *buckets;
+    uint16_t *metadata;
+} vt_generic_map;
 
-// Clean up and free the map
-void vt_wrapper_cleanup(vt_u64_map *table);
+// ============================================================================
+// Type aliases for each key/value combination
+// ============================================================================
 
-// Insert a key-value pair. Returns 1 on success, 0 on failure
-int vt_wrapper_insert(vt_u64_map *table, uint64_t key, uint64_t val);
+// u64 key maps
+typedef vt_generic_map vt_u64_void_map;
+typedef vt_generic_map vt_u64_val4_map;
+typedef vt_generic_map vt_u64_val64_map;
+typedef vt_generic_map vt_u64_val256_map;
 
-// Get value for a key. Returns pointer to value if found, NULL otherwise
-uint64_t* vt_wrapper_get(vt_u64_map *table, uint64_t key);
+// u16 key maps
+typedef vt_generic_map vt_u16_void_map;
+typedef vt_generic_map vt_u16_val4_map;
+typedef vt_generic_map vt_u16_val64_map;
+typedef vt_generic_map vt_u16_val256_map;
 
-// Erase a key. Returns 1 if erased, 0 if not found
-int vt_wrapper_erase(vt_u64_map *table, uint64_t key);
+// string key maps
+typedef vt_generic_map vt_str_void_map;
+typedef vt_generic_map vt_str_val4_map;
+typedef vt_generic_map vt_str_val64_map;
+typedef vt_generic_map vt_str_val256_map;
 
-// Get current size
-size_t vt_wrapper_size(vt_u64_map *table);
+// ============================================================================
+// u64 key - void value (set)
+// ============================================================================
 
-// Get bucket count
-size_t vt_wrapper_bucket_count(vt_u64_map *table);
+void vt_u64_void_init(vt_u64_void_map *table);
+void vt_u64_void_cleanup(vt_u64_void_map *table);
+int vt_u64_void_insert(vt_u64_void_map *table, uint64_t key);
+int vt_u64_void_get(vt_u64_void_map *table, uint64_t key);
+int vt_u64_void_erase(vt_u64_void_map *table, uint64_t key);
+size_t vt_u64_void_size(vt_u64_void_map *table);
+vt_generic_iter vt_u64_void_first(vt_u64_void_map *table);
+int vt_u64_void_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u64_void_next(vt_generic_iter iter);
 
-// Iteration
-vt_wrapper_iter vt_wrapper_first(vt_u64_map *table);
-int vt_wrapper_is_end(vt_wrapper_iter iter);
-vt_wrapper_iter vt_wrapper_next(vt_wrapper_iter iter);
-uint64_t vt_wrapper_iter_val(vt_wrapper_iter iter);
+// ============================================================================
+// u64 key - val4 value (4 bytes)
+// ============================================================================
+
+void vt_u64_val4_init(vt_u64_val4_map *table);
+void vt_u64_val4_cleanup(vt_u64_val4_map *table);
+int vt_u64_val4_insert(vt_u64_val4_map *table, uint64_t key, const uint8_t *val);
+const uint8_t* vt_u64_val4_get(vt_u64_val4_map *table, uint64_t key);
+int vt_u64_val4_erase(vt_u64_val4_map *table, uint64_t key);
+size_t vt_u64_val4_size(vt_u64_val4_map *table);
+vt_generic_iter vt_u64_val4_first(vt_u64_val4_map *table);
+int vt_u64_val4_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u64_val4_next(vt_generic_iter iter);
+
+// ============================================================================
+// u64 key - val64 value (64 bytes)
+// ============================================================================
+
+void vt_u64_val64_init(vt_u64_val64_map *table);
+void vt_u64_val64_cleanup(vt_u64_val64_map *table);
+int vt_u64_val64_insert(vt_u64_val64_map *table, uint64_t key, const uint8_t *val);
+const uint8_t* vt_u64_val64_get(vt_u64_val64_map *table, uint64_t key);
+int vt_u64_val64_erase(vt_u64_val64_map *table, uint64_t key);
+size_t vt_u64_val64_size(vt_u64_val64_map *table);
+vt_generic_iter vt_u64_val64_first(vt_u64_val64_map *table);
+int vt_u64_val64_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u64_val64_next(vt_generic_iter iter);
+
+// ============================================================================
+// u64 key - val256 value (256 bytes)
+// ============================================================================
+
+void vt_u64_val256_init(vt_u64_val256_map *table);
+void vt_u64_val256_cleanup(vt_u64_val256_map *table);
+int vt_u64_val256_insert(vt_u64_val256_map *table, uint64_t key, const uint8_t *val);
+const uint8_t* vt_u64_val256_get(vt_u64_val256_map *table, uint64_t key);
+int vt_u64_val256_erase(vt_u64_val256_map *table, uint64_t key);
+size_t vt_u64_val256_size(vt_u64_val256_map *table);
+vt_generic_iter vt_u64_val256_first(vt_u64_val256_map *table);
+int vt_u64_val256_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u64_val256_next(vt_generic_iter iter);
+
+// ============================================================================
+// u16 key - void value (set)
+// ============================================================================
+
+void vt_u16_void_init(vt_u16_void_map *table);
+void vt_u16_void_cleanup(vt_u16_void_map *table);
+int vt_u16_void_insert(vt_u16_void_map *table, uint16_t key);
+int vt_u16_void_get(vt_u16_void_map *table, uint16_t key);
+int vt_u16_void_erase(vt_u16_void_map *table, uint16_t key);
+size_t vt_u16_void_size(vt_u16_void_map *table);
+vt_generic_iter vt_u16_void_first(vt_u16_void_map *table);
+int vt_u16_void_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u16_void_next(vt_generic_iter iter);
+
+// ============================================================================
+// u16 key - val4 value (4 bytes)
+// ============================================================================
+
+void vt_u16_val4_init(vt_u16_val4_map *table);
+void vt_u16_val4_cleanup(vt_u16_val4_map *table);
+int vt_u16_val4_insert(vt_u16_val4_map *table, uint16_t key, const uint8_t *val);
+const uint8_t* vt_u16_val4_get(vt_u16_val4_map *table, uint16_t key);
+int vt_u16_val4_erase(vt_u16_val4_map *table, uint16_t key);
+size_t vt_u16_val4_size(vt_u16_val4_map *table);
+vt_generic_iter vt_u16_val4_first(vt_u16_val4_map *table);
+int vt_u16_val4_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u16_val4_next(vt_generic_iter iter);
+
+// ============================================================================
+// u16 key - val64 value (64 bytes)
+// ============================================================================
+
+void vt_u16_val64_init(vt_u16_val64_map *table);
+void vt_u16_val64_cleanup(vt_u16_val64_map *table);
+int vt_u16_val64_insert(vt_u16_val64_map *table, uint16_t key, const uint8_t *val);
+const uint8_t* vt_u16_val64_get(vt_u16_val64_map *table, uint16_t key);
+int vt_u16_val64_erase(vt_u16_val64_map *table, uint16_t key);
+size_t vt_u16_val64_size(vt_u16_val64_map *table);
+vt_generic_iter vt_u16_val64_first(vt_u16_val64_map *table);
+int vt_u16_val64_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u16_val64_next(vt_generic_iter iter);
+
+// ============================================================================
+// u16 key - val256 value (256 bytes)
+// ============================================================================
+
+void vt_u16_val256_init(vt_u16_val256_map *table);
+void vt_u16_val256_cleanup(vt_u16_val256_map *table);
+int vt_u16_val256_insert(vt_u16_val256_map *table, uint16_t key, const uint8_t *val);
+const uint8_t* vt_u16_val256_get(vt_u16_val256_map *table, uint16_t key);
+int vt_u16_val256_erase(vt_u16_val256_map *table, uint16_t key);
+size_t vt_u16_val256_size(vt_u16_val256_map *table);
+vt_generic_iter vt_u16_val256_first(vt_u16_val256_map *table);
+int vt_u16_val256_is_end(vt_generic_iter iter);
+vt_generic_iter vt_u16_val256_next(vt_generic_iter iter);
+
+// ============================================================================
+// string key - void value (set)
+// ============================================================================
+
+void vt_str_void_init(vt_str_void_map *table);
+void vt_str_void_cleanup(vt_str_void_map *table);
+int vt_str_void_insert(vt_str_void_map *table, const char *key, size_t len);
+int vt_str_void_get(vt_str_void_map *table, const char *key, size_t len);
+int vt_str_void_erase(vt_str_void_map *table, const char *key, size_t len);
+size_t vt_str_void_size(vt_str_void_map *table);
+vt_generic_iter vt_str_void_first(vt_str_void_map *table);
+int vt_str_void_is_end(vt_generic_iter iter);
+vt_generic_iter vt_str_void_next(vt_generic_iter iter);
+
+// ============================================================================
+// string key - val4 value (4 bytes)
+// ============================================================================
+
+void vt_str_val4_init(vt_str_val4_map *table);
+void vt_str_val4_cleanup(vt_str_val4_map *table);
+int vt_str_val4_insert(vt_str_val4_map *table, const char *key, size_t len, const uint8_t *val);
+const uint8_t* vt_str_val4_get(vt_str_val4_map *table, const char *key, size_t len);
+int vt_str_val4_erase(vt_str_val4_map *table, const char *key, size_t len);
+size_t vt_str_val4_size(vt_str_val4_map *table);
+vt_generic_iter vt_str_val4_first(vt_str_val4_map *table);
+int vt_str_val4_is_end(vt_generic_iter iter);
+vt_generic_iter vt_str_val4_next(vt_generic_iter iter);
+
+// ============================================================================
+// string key - val64 value (64 bytes)
+// ============================================================================
+
+void vt_str_val64_init(vt_str_val64_map *table);
+void vt_str_val64_cleanup(vt_str_val64_map *table);
+int vt_str_val64_insert(vt_str_val64_map *table, const char *key, size_t len, const uint8_t *val);
+const uint8_t* vt_str_val64_get(vt_str_val64_map *table, const char *key, size_t len);
+int vt_str_val64_erase(vt_str_val64_map *table, const char *key, size_t len);
+size_t vt_str_val64_size(vt_str_val64_map *table);
+vt_generic_iter vt_str_val64_first(vt_str_val64_map *table);
+int vt_str_val64_is_end(vt_generic_iter iter);
+vt_generic_iter vt_str_val64_next(vt_generic_iter iter);
+
+// ============================================================================
+// string key - val256 value (256 bytes)
+// ============================================================================
+
+void vt_str_val256_init(vt_str_val256_map *table);
+void vt_str_val256_cleanup(vt_str_val256_map *table);
+int vt_str_val256_insert(vt_str_val256_map *table, const char *key, size_t len, const uint8_t *val);
+const uint8_t* vt_str_val256_get(vt_str_val256_map *table, const char *key, size_t len);
+int vt_str_val256_erase(vt_str_val256_map *table, const char *key, size_t len);
+size_t vt_str_val256_size(vt_str_val256_map *table);
+vt_generic_iter vt_str_val256_first(vt_str_val256_map *table);
+int vt_str_val256_is_end(vt_generic_iter iter);
+vt_generic_iter vt_str_val256_next(vt_generic_iter iter);
 
 #endif // VERSTABLE_WRAPPER_H
-

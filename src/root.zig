@@ -39,21 +39,23 @@ const DISPLACEMENT_MASK: u16 = 0x07FF;
 /// Minimum non-zero bucket count (must be power of two)
 const MIN_NONZERO_BUCKET_COUNT: usize = 8;
 
-/// Default maximum load factor (90%)
-const DEFAULT_MAX_LOAD: f32 = 0.9;
+/// Default maximum load factor (80%)
+const DEFAULT_MAX_LOAD: f32 = 0.80;
 
 // ============================================================================
 // Hash Functions
 // ============================================================================
 
 /// Fast-hash for integers (64-bit mixer)
-/// Based on https://jonkagstrom.com/bit-mixer-construction
+/// Based on fast-hash by Zilong Tan - proven faster than splitmix64/Murmur3.
+/// See: https://jonkagstrom.com/bit-mixer-construction
+/// This matches Verstable's vt_hash_integer for consistent performance.
 pub fn hashInteger(key: u64) u64 {
-    var k = key;
-    k ^= k >> 23;
-    k *%= 0x2127599bf4325c37;
-    k ^= k >> 47;
-    return k;
+    var x = key;
+    x ^= x >> 23;
+    x *%= 0x2127599bf4325c37;
+    x ^= x >> 47;
+    return x;
 }
 
 /// Wyhash for byte slices - high quality, fast string hash
@@ -145,11 +147,11 @@ fn AutoHashFn(comptime K: type) type {
             return switch (info) {
                 .int, .comptime_int => hashInteger(@as(u64, @intCast(key))),
                 .pointer => |ptr| if (ptr.size == .slice and ptr.child == u8)
-                    wyhash(key)
+                    hashString(key)
                 else
                     hashInteger(@intFromPtr(key)),
                 .array => |arr| if (arr.child == u8)
-                    wyhash(&key)
+                    hashString(&key)
                 else
                     @compileError("Unsupported key type for auto hash: " ++ @typeName(K)),
                 .@"enum" => hashInteger(@intFromEnum(key)),
@@ -157,6 +159,21 @@ fn AutoHashFn(comptime K: type) type {
             };
         }
     };
+}
+
+/// Hash function for strings with fast path for short strings.
+/// For strings <= 8 bytes, we pack into u64 and use the integer hash.
+/// For longer strings, we use the full wyhash.
+fn hashString(key: []const u8) u64 {
+    // Fast path: short strings can be packed into a u64
+    if (key.len <= 8) {
+        var k: u64 = 0;
+        const dest: *[8]u8 = @ptrCast(&k);
+        @memcpy(dest[0..key.len], key);
+        // Mix in the length to differentiate e.g. "a\x00" from "a"
+        return hashInteger(k ^ (@as(u64, key.len) << 56));
+    }
+    return wyhash(key);
 }
 
 fn AutoEqlFn(comptime K: type) type {
@@ -292,28 +309,23 @@ pub fn TheHashTableWithFns(
                 return &table.buckets[i];
             }
 
-            /// SIMD-accelerated scan for next occupied bucket.
-            /// Scans multiple metadata entries at a time using vector operations.
+            /// Fast scan for next occupied bucket.
+            /// Scans 4 metadata entries at a time using u64 reads for efficiency.
             inline fn fastForward(self: *Iterator) void {
                 const metadata = self.table.metadata;
                 const end = self.end_index;
 
-                // Scan 8 buckets at a time using SIMD when aligned
-                while (self.index + 8 <= end) {
-                    const ptr = metadata + self.index;
-                    // Check alignment for SIMD
-                    if (@intFromPtr(ptr) % 16 == 0) {
-                        const offset = firstNonZeroU16x8(ptr);
-                        if (offset < 8) {
-                            self.index += offset;
-                            return;
-                        }
-                        self.index += 8;
-                    } else {
-                        // Fallback for unaligned - scan one at a time until aligned or found
-                        if (ptr[0] != EMPTY) return;
-                        self.index += 1;
+                // Scan 4 buckets at a time using u64 reads
+                while (self.index + 4 <= end) {
+                    const ptr: [*]const u8 = @ptrCast(metadata + self.index);
+                    // Use unaligned read to avoid alignment issues
+                    const group: u64 = std.mem.readInt(u64, ptr[0..8], .little);
+                    const offset = firstNonZeroU16(group);
+                    if (offset < 4) {
+                        self.index += offset;
+                        return;
                     }
+                    self.index += 4;
                 }
 
                 // Scan remaining buckets one at a time
@@ -539,6 +551,19 @@ pub fn TheHashTableWithFns(
             }
         }
 
+        /// Pre-allocate capacity for `new_capacity` total keys (including existing ones).
+        /// This is useful before bulk insertions to avoid repeated rehashing.
+        /// Example: `try map.ensureTotalCapacity(1000);` before inserting 1000 items.
+        pub fn ensureTotalCapacity(self: *Self, new_capacity: usize) !void {
+            try self.reserve(new_capacity);
+        }
+
+        /// Pre-allocate capacity for `additional_count` more keys beyond current count.
+        /// This is useful when you know how many more items you'll add.
+        pub fn ensureUnusedCapacity(self: *Self, additional_count: usize) !void {
+            try self.reserve(self.key_count + additional_count);
+        }
+
         /// Shrink the table to fit the current number of keys.
         pub fn shrink(self: *Self) !void {
             const min_buckets = self.minBucketCountForSize(self.key_count);
@@ -577,36 +602,42 @@ pub fn TheHashTableWithFns(
             inserted: bool,
         };
 
-        fn insertInternal(self: *Self, key: K, value: V, unique: bool, replace: bool) !InsertResult {
+        inline fn insertInternal(self: *Self, key: K, value: V, unique: bool, replace: bool) !InsertResult {
             while (true) {
-                const result = self.insertRaw(key, value, unique, replace);
-                if (result) |r| {
+                if (self.insertRaw(key, value, unique, replace)) |r| {
                     return r;
+                } else {
+                    // Need to grow and rehash - unlikely path
+                    @branchHint(.unlikely);
+                    const new_count = if (self.buckets_mask != 0)
+                        self.bucketCount() * 2
+                    else
+                        MIN_NONZERO_BUCKET_COUNT;
+                    try self.rehash(new_count);
                 }
-                // Need to grow and rehash
-                const new_count = if (self.buckets_mask != 0)
-                    self.bucketCount() * 2
-                else
-                    MIN_NONZERO_BUCKET_COUNT;
-                try self.rehash(new_count);
             }
         }
 
-        fn insertRaw(self: *Self, key: K, value: V, unique: bool, replace: bool) ?InsertResult {
+        inline fn insertRaw(self: *Self, key: K, value: V, unique: bool, replace: bool) ?InsertResult {
             const hash = hashFn(key);
             const frag = hashFrag(hash);
             const home_bucket = hash & self.buckets_mask;
 
+            // Prefetch bucket data while we check metadata (hides memory latency)
+            @prefetch(&self.buckets[home_bucket], .{});
+
             // Case 1: Home bucket is empty or occupied by non-belonging key
             if ((self.metadata[home_bucket] & IN_HOME_BUCKET_MASK) == 0) {
-                // Load factor check
+                // Load factor check - unlikely to trigger during normal operation
                 if (self.key_count + 1 > self.capacity()) {
+                    @branchHint(.unlikely);
                     return null;
                 }
 
                 // Evict if occupied by non-belonging key
                 if (self.metadata[home_bucket] != EMPTY) {
                     if (!self.evict(home_bucket)) {
+                        @branchHint(.unlikely);
                         return null;
                     }
                 }
@@ -644,13 +675,17 @@ pub fn TheHashTableWithFns(
                 }
             }
 
-            // Load factor check
+            // Load factor check - unlikely to trigger during normal operation
             if (self.key_count + 1 > self.capacity()) {
+                @branchHint(.unlikely);
                 return null;
             }
 
-            // Find empty bucket
-            const empty_result = self.findFirstEmpty(home_bucket) orelse return null;
+            // Find empty bucket - unlikely to fail
+            const empty_result = self.findFirstEmpty(home_bucket) orelse {
+                @branchHint(.unlikely);
+                return null;
+            };
             const empty = empty_result.index;
             const displacement = empty_result.displacement;
 
@@ -690,12 +725,16 @@ pub fn TheHashTableWithFns(
             home_bucket: usize,
         };
 
-        fn getInternal(self: *const Self, key: K) GetResult {
+        inline fn getInternal(self: *const Self, key: K) GetResult {
             const hash = hashFn(key);
             const home_bucket = hash & self.buckets_mask;
 
+            // Prefetch bucket data while we check metadata (hides memory latency)
+            @prefetch(&self.buckets[home_bucket], .{});
+
             // If home bucket is empty or contains non-belonging key, key doesn't exist
             if ((self.metadata[home_bucket] & IN_HOME_BUCKET_MASK) == 0) {
+                @branchHint(.unlikely);
                 return .{ .bucket_idx = null, .home_bucket = home_bucket };
             }
 
@@ -711,6 +750,7 @@ pub fn TheHashTableWithFns(
 
                 const displacement = self.metadata[bucket] & DISPLACEMENT_MASK;
                 if (displacement == DISPLACEMENT_MASK) {
+                    @branchHint(.unlikely);
                     return .{ .bucket_idx = null, .home_bucket = home_bucket };
                 }
                 bucket = (home_bucket + quadratic(displacement)) & self.buckets_mask;
@@ -774,7 +814,7 @@ pub fn TheHashTableWithFns(
             displacement: u16,
         };
 
-        fn findFirstEmpty(self: *Self, home_bucket: usize) ?FindEmptyResult {
+        inline fn findFirstEmpty(self: *Self, home_bucket: usize) ?FindEmptyResult {
             var displacement: u16 = 1;
             var linear_displacement: usize = 1;
 
@@ -786,13 +826,14 @@ pub fn TheHashTableWithFns(
 
                 displacement += 1;
                 if (displacement == DISPLACEMENT_MASK) {
+                    @branchHint(.unlikely);
                     return null;
                 }
                 linear_displacement += displacement;
             }
         }
 
-        fn findInsertLocationInChain(self: *Self, home_bucket: usize, displacement_to_empty: u16) usize {
+        inline fn findInsertLocationInChain(self: *Self, home_bucket: usize, displacement_to_empty: u16) usize {
             var candidate = home_bucket;
             while (true) {
                 const displacement = self.metadata[candidate] & DISPLACEMENT_MASK;
@@ -803,7 +844,7 @@ pub fn TheHashTableWithFns(
             }
         }
 
-        fn evict(self: *Self, bucket: usize) bool {
+        inline fn evict(self: *Self, bucket: usize) bool {
             // Find home bucket of occupying key
             const home_bucket = hashFn(self.buckets[bucket].key) & self.buckets_mask;
 
@@ -1081,6 +1122,27 @@ test "reserve and shrink" {
 
     try map.shrink();
     try std.testing.expectEqual(@as(usize, 50), map.count());
+}
+
+test "ensureTotalCapacity and ensureUnusedCapacity" {
+    const allocator = std.testing.allocator;
+    var map = TheHashTable(u32, u32).init(allocator);
+    defer map.deinit();
+
+    // Pre-allocate for 1000 items
+    try map.ensureTotalCapacity(1000);
+    try std.testing.expect(map.capacity() >= 1000);
+
+    // Insert 500 items - should not cause any rehash
+    const initial_bucket_count = map.bucketCount();
+    for (0..500) |i| {
+        try map.put(@intCast(i), @intCast(i));
+    }
+    try std.testing.expectEqual(initial_bucket_count, map.bucketCount());
+
+    // ensureUnusedCapacity for 500 more - should not grow since we have room
+    try map.ensureUnusedCapacity(500);
+    try std.testing.expectEqual(initial_bucket_count, map.bucketCount());
 }
 
 test "clear" {
