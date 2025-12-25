@@ -155,17 +155,128 @@ pub fn build(b: *std.Build) void {
         .flags = &.{ "-std=c11", "-O3", "-DNDEBUG" },
     });
 
+    // C++ compilation flags
+    const cpp_flags = &[_][]const u8{
+        "-std=c++17",
+        "-O3",
+        "-DNDEBUG",
+        "-fno-exceptions", // Abseil can work without exceptions
+        "-fno-rtti",
+    };
+
+    // Add C++ source file for Abseil/Boost/Ankerl wrapper
+    bench_mod.addCSourceFile(.{
+        .file = b.path("src/cpp_hashtables_wrapper.cpp"),
+        .flags = cpp_flags,
+    });
+
+    // Abseil source files needed for flat_hash_map
+    const abseil_sources = &[_][]const u8{
+        // Container internals
+        "deps/abseil-cpp/absl/container/internal/raw_hash_set.cc",
+        "deps/abseil-cpp/absl/container/internal/hashtablez_sampler.cc",
+        "deps/abseil-cpp/absl/container/internal/hashtablez_sampler_force_weak_definition.cc",
+        // Hash
+        "deps/abseil-cpp/absl/hash/internal/hash.cc",
+        "deps/abseil-cpp/absl/hash/internal/city.cc",
+        // Base
+        "deps/abseil-cpp/absl/base/internal/raw_logging.cc",
+        "deps/abseil-cpp/absl/base/internal/throw_delegate.cc",
+        "deps/abseil-cpp/absl/base/log_severity.cc",
+        "deps/abseil-cpp/absl/base/internal/spinlock.cc",
+        "deps/abseil-cpp/absl/base/internal/spinlock_wait.cc",
+        "deps/abseil-cpp/absl/base/internal/sysinfo.cc",
+        "deps/abseil-cpp/absl/base/internal/thread_identity.cc",
+        "deps/abseil-cpp/absl/base/internal/unscaledcycleclock.cc",
+        "deps/abseil-cpp/absl/base/internal/cycleclock.cc",
+        "deps/abseil-cpp/absl/base/internal/low_level_alloc.cc",
+        // Profiling
+        "deps/abseil-cpp/absl/profiling/internal/exponential_biased.cc",
+        // Synchronization
+        "deps/abseil-cpp/absl/synchronization/mutex.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/graphcycles.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/kernel_timeout.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/create_thread_identity.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/per_thread_sem.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/waiter_base.cc",
+        "deps/abseil-cpp/absl/synchronization/internal/futex_waiter.cc",
+        // Time
+        "deps/abseil-cpp/absl/time/clock.cc",
+        "deps/abseil-cpp/absl/time/duration.cc",
+        "deps/abseil-cpp/absl/time/time.cc",
+        "deps/abseil-cpp/absl/time/format.cc",
+        "deps/abseil-cpp/absl/time/civil_time.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/civil_time_detail.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_fixed.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_format.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_if.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_impl.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_info.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_libc.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_lookup.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/time_zone_posix.cc",
+        "deps/abseil-cpp/absl/time/internal/cctz/src/zone_info_source.cc",
+        // Debugging
+        "deps/abseil-cpp/absl/debugging/stacktrace.cc",
+        "deps/abseil-cpp/absl/debugging/symbolize.cc",
+        "deps/abseil-cpp/absl/debugging/internal/demangle.cc",
+        "deps/abseil-cpp/absl/debugging/internal/address_is_readable.cc",
+        "deps/abseil-cpp/absl/debugging/internal/elf_mem_image.cc",
+        "deps/abseil-cpp/absl/debugging/internal/vdso_support.cc",
+        "deps/abseil-cpp/absl/debugging/internal/borrowed_fixup_buffer.cc",
+        // Strings (for time formatting)
+        "deps/abseil-cpp/absl/strings/internal/str_format/arg.cc",
+        "deps/abseil-cpp/absl/strings/internal/str_format/bind.cc",
+        "deps/abseil-cpp/absl/strings/internal/str_format/extension.cc",
+        "deps/abseil-cpp/absl/strings/internal/str_format/float_conversion.cc",
+        "deps/abseil-cpp/absl/strings/internal/str_format/output.cc",
+        "deps/abseil-cpp/absl/strings/internal/str_format/parser.cc",
+        "deps/abseil-cpp/absl/strings/str_cat.cc",
+        "deps/abseil-cpp/absl/strings/numbers.cc",
+        "deps/abseil-cpp/absl/strings/charconv.cc",
+        "deps/abseil-cpp/absl/strings/ascii.cc",
+        "deps/abseil-cpp/absl/strings/match.cc",
+        "deps/abseil-cpp/absl/strings/internal/memutil.cc",
+        "deps/abseil-cpp/absl/strings/internal/charconv_parse.cc",
+        // Numeric
+        "deps/abseil-cpp/absl/numeric/int128.cc",
+    };
+
+    for (abseil_sources) |src| {
+        bench_mod.addCSourceFile(.{
+            .file = b.path(src),
+            .flags = cpp_flags,
+        });
+    }
+
     // Add include paths for verstable.h and verstable_wrapper.h
     bench_mod.addIncludePath(b.path("Verstable"));
     bench_mod.addIncludePath(b.path("src"));
+
+    // Add include paths for C++ libraries
+    bench_mod.addIncludePath(b.path("deps/abseil-cpp")); // Abseil
+    bench_mod.addIncludePath(b.path("deps/unordered_dense/include")); // Ankerl
+
+    // Boost include paths (modular boost structure)
+    bench_mod.addIncludePath(b.path("deps/boost_unordered/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_config/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_core/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_container_hash/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_assert/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_throw_exception/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_static_assert/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_mp11/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_describe/include"));
+    bench_mod.addIncludePath(b.path("deps/boost_predef/include"));
 
     const bench_exe = b.addExecutable(.{
         .name = "benchmark",
         .root_module = bench_mod,
     });
 
-    // Link libc for the C code
+    // Link libc and libstdc++ for C/C++ code
     bench_exe.linkLibC();
+    bench_exe.linkLibCpp();
 
     b.installArtifact(bench_exe);
 

@@ -11,6 +11,10 @@ const vt = @cImport({
     @cInclude("verstable_wrapper.h");
 });
 
+const cpp = @cImport({
+    @cInclude("cpp_hashtables_wrapper.h");
+});
+
 // ============================================================================
 // Configuration
 // ============================================================================
@@ -117,8 +121,67 @@ fn VerstableWrapper(comptime K: type, comptime V: type) type {
 }
 
 // ============================================================================
+// C++ Hash Table Wrappers (Abseil, Boost, Ankerl)
+// ============================================================================
+
+fn CppWrapper(comptime lib_prefix: []const u8, comptime K: type, comptime V: type) type {
+    const key_name = if (K == u64) "u64" else if (K == u16) "u16" else if (K == []const u8) "str" else @compileError("Unsupported key type");
+    const val_name = if (V == void) "void" else if (V == Value4) "val4" else if (V == Value64) "val64" else if (V == Value56) "val56" else @compileError("Unsupported value type");
+    const prefix = lib_prefix ++ "_" ++ key_name ++ "_" ++ val_name ++ "_";
+
+    return struct {
+        const Self = @This();
+        handle: cpp.cpp_map_handle,
+
+        const initFn = @field(cpp, prefix ++ "init");
+        const cleanupFn = @field(cpp, prefix ++ "cleanup");
+        const insertFn = @field(cpp, prefix ++ "insert");
+        const getFn = @field(cpp, prefix ++ "get");
+        const eraseFn = @field(cpp, prefix ++ "erase");
+        const iterCountFn = @field(cpp, prefix ++ "iter_count");
+
+        pub fn init() Self {
+            return .{ .handle = initFn() };
+        }
+        pub fn deinit(self: *Self) void {
+            cleanupFn(self.handle);
+        }
+        pub fn insert(self: *Self, key: K, val: V) bool {
+            if (K == []const u8) {
+                return if (V == void) insertFn(self.handle, key.ptr, key.len) != 0 else insertFn(self.handle, key.ptr, key.len, &val.data) != 0;
+            } else {
+                return if (V == void) insertFn(self.handle, key) != 0 else insertFn(self.handle, key, &val.data) != 0;
+            }
+        }
+        pub fn get(self: *Self, key: K) bool {
+            return if (K == []const u8) getFn(self.handle, key.ptr, key.len) != 0 else getFn(self.handle, key) != 0;
+        }
+        pub fn erase(self: *Self, key: K) bool {
+            return if (K == []const u8) eraseFn(self.handle, key.ptr, key.len) != 0 else eraseFn(self.handle, key) != 0;
+        }
+        pub fn iterCount(self: *Self) u64 {
+            return iterCountFn(self.handle);
+        }
+    };
+}
+
+fn AbslWrapper(comptime K: type, comptime V: type) type {
+    return CppWrapper("absl", K, V);
+}
+
+fn BoostWrapper(comptime K: type, comptime V: type) type {
+    return CppWrapper("boost", K, V);
+}
+
+fn AnkerlWrapper(comptime K: type, comptime V: type) type {
+    return CppWrapper("ankerl", K, V);
+}
+
+// ============================================================================
 // Generic Benchmark Runner
 // ============================================================================
+
+const BenchOp = enum { insert, update, lookup, miss, delete, iter, churn, mixed };
 
 fn Benchmarks(comptime K: type, comptime V: type) type {
     return struct {
@@ -130,7 +193,7 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
         }
 
         // TheHashTable benchmarks
-        fn benchOurs(comptime Op: enum { insert, update, lookup, miss, delete, iter, churn, mixed }, comptime size: usize, keys: []const K, extra: anytype, alloc: std.mem.Allocator) !u64 {
+        fn benchOurs(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype, alloc: std.mem.Allocator) !u64 {
             const Map = TheHashTable(K, V);
             var total: u64 = 0;
 
@@ -249,7 +312,7 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
         }
 
         // std.HashMap benchmarks
-        fn benchStd(comptime Op: enum { insert, update, lookup, miss, delete, iter, churn, mixed }, comptime size: usize, keys: []const K, extra: anytype, alloc: std.mem.Allocator) !u64 {
+        fn benchStd(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype, alloc: std.mem.Allocator) !u64 {
             const StdMap = if (is_string) std.StringHashMap(V) else std.AutoHashMap(K, V);
             var total: u64 = 0;
 
@@ -347,7 +410,7 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
         }
 
         // Verstable benchmarks
-        fn benchVt(comptime Op: enum { insert, update, lookup, miss, delete, iter, churn, mixed }, comptime size: usize, keys: []const K, extra: anytype) !u64 {
+        fn benchVt(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype) !u64 {
             const VtMap = VerstableWrapper(K, V);
             var total: u64 = 0;
 
@@ -441,6 +504,111 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
             }
             return total / BENCHMARK_ITERATIONS;
         }
+
+        // Generic C++ wrapper benchmark (for Abseil, Boost, Ankerl)
+        fn benchCpp(comptime WrapperFn: fn (type, type) type, comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype) !u64 {
+            const CppMap = WrapperFn(K, V);
+            var total: u64 = 0;
+
+            for (0..BENCHMARK_ITERATIONS) |_| {
+                var map = CppMap.init();
+                defer map.deinit();
+
+                if (Op != .insert) {
+                    const setup_keys = if (Op == .churn) keys[0 .. size / 2] else keys[0..size];
+                    for (setup_keys) |k| _ = map.insert(k, makeValue(V, keyToU64(k)));
+                }
+
+                var timer = try Timer.start();
+                switch (Op) {
+                    .insert => for (keys[0..size]) |k| {
+                        _ = map.insert(k, makeValue(V, keyToU64(k)));
+                    },
+                    .update => for (keys[0..size]) |k| {
+                        _ = map.insert(k, makeValue(V, keyToU64(k) +% 1));
+                    },
+                    .lookup => {
+                        var found: u64 = 0;
+                        for (extra[0..size]) |idx| if (map.get(keys[idx])) {
+                            found += 1;
+                        };
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .miss => {
+                        var miss: u64 = 0;
+                        const miss_keys: []const K = extra;
+                        for (miss_keys[0..size]) |k| if (!map.get(k)) {
+                            miss += 1;
+                        };
+                        std.mem.doNotOptimizeAway(miss);
+                    },
+                    .delete => for (keys[0..size]) |k| {
+                        _ = map.erase(k);
+                    },
+                    .iter => {
+                        const count = map.iterCount();
+                        std.mem.doNotOptimizeAway(count);
+                    },
+                    .churn => {
+                        var rng = makeRng(11111);
+                        for (0..size) |_| {
+                            const idx = rng.random().int(usize) % size;
+                            if (rng.random().boolean()) {
+                                _ = map.insert(keys[idx], makeValue(V, keyToU64(keys[idx])));
+                            } else _ = map.erase(keys[idx]);
+                        }
+                    },
+                    .mixed => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        const ops = mixed_data.ops[0..size];
+                        const indices = mixed_data.indices[0..size];
+                        const hit_keys = mixed_data.hit_keys;
+                        const miss_keys_ptr = mixed_data.miss_keys;
+                        for (ops, indices) |op, idx| {
+                            switch (op) {
+                                0 => if (map.get(hit_keys[idx])) {
+                                    found += 1;
+                                },
+                                1 => if (!map.get(miss_keys_ptr[idx])) {
+                                    found += 1;
+                                },
+                                2 => {
+                                    _ = map.insert(hit_keys[idx], makeValue(V, keyToU64(hit_keys[idx])));
+                                },
+                                3 => {
+                                    _ = map.erase(hit_keys[idx]);
+                                },
+                                else => {
+                                    // Note: C++ wrapper doesn't expose partial iteration,
+                                    // so we just call iterCount which iterates all elements.
+                                    // This is intentionally different from Zig implementations
+                                    // which only iterate 10 steps - making this a full-iter test
+                                    // for C++ libs. For fair comparison, we skip the iter op.
+                                    found += 1; // Just count, don't iterate
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                }
+                total += timer.read();
+            }
+            return total / BENCHMARK_ITERATIONS;
+        }
+
+        // Convenience functions for each C++ implementation
+        fn benchAbsl(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype) !u64 {
+            return benchCpp(AbslWrapper, Op, size, keys, extra);
+        }
+
+        fn benchBoost(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype) !u64 {
+            return benchCpp(BoostWrapper, Op, size, keys, extra);
+        }
+
+        fn benchAnkerl(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype) !u64 {
+            return benchCpp(AnkerlWrapper, Op, size, keys, extra);
+        }
     };
 }
 
@@ -460,24 +628,37 @@ fn printTime(ns: u64) void {
     }
 }
 
-fn printRow(name: []const u8, ours: u64, vt_val: ?u64, std_val: u64) void {
+const BenchResults = struct {
+    ours: u64,
+    vt: ?u64 = null,
+    absl: ?u64 = null,
+    boost: ?u64 = null,
+    ankerl: ?u64 = null,
+    std_val: u64,
+};
+
+fn printRowFull(name: []const u8, r: BenchResults) void {
     std.debug.print("  │ {s:<14} │", .{name});
-    printTime(ours);
-    std.debug.print("      │", .{});
-    if (vt_val) |v| {
+    printTime(r.ours);
+    std.debug.print(" │", .{});
+    if (r.vt) |v| {
         printTime(v);
-        std.debug.print("      │", .{});
+        std.debug.print(" │", .{});
     }
-    printTime(std_val);
-    const ours_f = @as(f64, @floatFromInt(@max(ours, 1)));
-    if (vt_val) |v| {
-        std.debug.print("      │ {d:>5.2}x    │ {d:>5.2}x    │\n", .{
-            @as(f64, @floatFromInt(v)) / ours_f,
-            @as(f64, @floatFromInt(std_val)) / ours_f,
-        });
-    } else {
-        std.debug.print("      │ {d:>5.2}x    │\n", .{@as(f64, @floatFromInt(std_val)) / ours_f});
+    if (r.absl) |v| {
+        printTime(v);
+        std.debug.print(" │", .{});
     }
+    if (r.boost) |v| {
+        printTime(v);
+        std.debug.print(" │", .{});
+    }
+    if (r.ankerl) |v| {
+        printTime(v);
+        std.debug.print(" │", .{});
+    }
+    printTime(r.std_val);
+    std.debug.print(" │\n", .{});
 }
 
 fn formatSize(size: usize) []const u8 {
@@ -551,8 +732,7 @@ fn runComparison(
 ) !void {
     const B = Benchmarks(K, V);
     const size_str = comptime formatSize(size);
-    const include_vt = K == u64 or K == u16 or K == []const u8;
-    const std_name = if (K == []const u8) "std.StringHash" else "std.AutoHash ";
+    const include_cpp = K == u64 or K == u16 or K == []const u8;
 
     // Pre-generate mixed ops data (RNG outside timing)
     const mixed_gen = try generateMixedOps(size, allocator);
@@ -566,14 +746,14 @@ fn runComparison(
     };
 
     std.debug.print("\n  {s} elements:\n", .{size_str});
-    if (include_vt) {
-        std.debug.print("  ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐\n", .{});
-        std.debug.print("  │ Operation      │ TheHashTable  │ Verstable (C) │ {s} │ vs Verst. │ vs std    │\n", .{std_name});
-        std.debug.print("  ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤\n", .{});
+    if (include_cpp) {
+        std.debug.print("  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┐\n", .{});
+        std.debug.print("  │ Operation      │ Ours     │ Verstab  │ Abseil   │ Boost    │ Ankerl   │ std      │\n", .{});
+        std.debug.print("  ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼──────────┤\n", .{});
     } else {
-        std.debug.print("  ┌────────────────┬───────────────┬───────────────┬───────────┐\n", .{});
-        std.debug.print("  │ Operation      │ TheHashTable  │ {s}│ Speedup   │\n", .{std_name});
-        std.debug.print("  ├────────────────┼───────────────┼───────────────┼───────────┤\n", .{});
+        std.debug.print("  ┌────────────────┬──────────┬──────────┐\n", .{});
+        std.debug.print("  │ Operation      │ Ours     │ std      │\n", .{});
+        std.debug.print("  ├────────────────┼──────────┼──────────┤\n", .{});
     }
 
     const ops = [_]struct { name: []const u8, op: @TypeOf(.insert) }{
@@ -591,21 +771,27 @@ fn runComparison(
         if (o.op == .mixed) {
             const ours = try B.benchOurs(.mixed, size, keys, &mixed_data, allocator) / size;
             const std_val = try B.benchStd(.mixed, size, keys, &mixed_data, allocator) / size;
-            const vt_val: ?u64 = if (include_vt) try B.benchVt(.mixed, size, keys, &mixed_data) / size else null;
-            printRow(o.name, ours, vt_val, std_val);
+            const vt_val: ?u64 = if (include_cpp) try B.benchVt(.mixed, size, keys, &mixed_data) / size else null;
+            const absl_val: ?u64 = if (include_cpp) try B.benchAbsl(.mixed, size, keys, &mixed_data) / size else null;
+            const boost_val: ?u64 = if (include_cpp) try B.benchBoost(.mixed, size, keys, &mixed_data) / size else null;
+            const ankerl_val: ?u64 = if (include_cpp) try B.benchAnkerl(.mixed, size, keys, &mixed_data) / size else null;
+            printRowFull(o.name, .{ .ours = ours, .vt = vt_val, .absl = absl_val, .boost = boost_val, .ankerl = ankerl_val, .std_val = std_val });
         } else {
-            const extra = if (o.op == .miss) miss_keys else if (o.op == .lookup) lookup_order else {};
-            const ours = try B.benchOurs(o.op, size, keys, extra, allocator) / size;
-            const std_val = try B.benchStd(o.op, size, keys, extra, allocator) / size;
-            const vt_val: ?u64 = if (include_vt) try B.benchVt(o.op, size, keys, extra) / size else null;
-            printRow(o.name, ours, vt_val, std_val);
+            const op_extra = if (o.op == .miss) miss_keys else if (o.op == .lookup) lookup_order else {};
+            const ours = try B.benchOurs(o.op, size, keys, op_extra, allocator) / size;
+            const std_val = try B.benchStd(o.op, size, keys, op_extra, allocator) / size;
+            const vt_val: ?u64 = if (include_cpp) try B.benchVt(o.op, size, keys, op_extra) / size else null;
+            const absl_val: ?u64 = if (include_cpp) try B.benchAbsl(o.op, size, keys, op_extra) / size else null;
+            const boost_val: ?u64 = if (include_cpp) try B.benchBoost(o.op, size, keys, op_extra) / size else null;
+            const ankerl_val: ?u64 = if (include_cpp) try B.benchAnkerl(o.op, size, keys, op_extra) / size else null;
+            printRowFull(o.name, .{ .ours = ours, .vt = vt_val, .absl = absl_val, .boost = boost_val, .ankerl = ankerl_val, .std_val = std_val });
         }
     }
 
-    if (include_vt) {
-        std.debug.print("  └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘\n", .{});
+    if (include_cpp) {
+        std.debug.print("  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴──────────┘\n", .{});
     } else {
-        std.debug.print("  └────────────────┴───────────────┴───────────────┴───────────┘\n", .{});
+        std.debug.print("  └────────────────┴──────────┴──────────┘\n", .{});
     }
 }
 
@@ -723,8 +909,11 @@ pub fn main() !void {
     std.debug.print("                      TheHashTable Benchmark Suite                              \n", .{});
     std.debug.print("                                                                                \n", .{});
     std.debug.print("  Comparing:                                                                    \n", .{});
-    std.debug.print("  - TheHashTable (Zig port)                                                     \n", .{});
-    std.debug.print("  - Verstable (C original): https://github.com/JacksonAllan/Verstable           \n", .{});
+    std.debug.print("  - TheHashTable (Zig)                                                          \n", .{});
+    std.debug.print("  - Verstable (C): https://github.com/JacksonAllan/Verstable                    \n", .{});
+    std.debug.print("  - Abseil (C++):  https://github.com/abseil/abseil-cpp (flat_hash_map)         \n", .{});
+    std.debug.print("  - Boost (C++):   https://github.com/boostorg/unordered (unordered_flat_map)   \n", .{});
+    std.debug.print("  - Ankerl (C++):  https://github.com/martinus/unordered_dense                  \n", .{});
     std.debug.print("  - std.AutoHashMap (Zig standard library)                                      \n", .{});
     std.debug.print("================================================================================\n\n", .{});
 

@@ -1,0 +1,36 @@
+[submodule "deps/unordered_dense"]
+	path = deps/unordered_dense
+	url = https://github.com/martinus/unordered_dense.git
+[submodule "deps/boost_unordered"]
+	path = deps/boost_unordered
+	url = https://github.com/boostorg/unordered.git
+[submodule "deps/abseil-cpp"]
+	path = deps/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
+[submodule "deps/boost_config"]
+	path = deps/boost_config
+	url = https://github.com/boostorg/config.git
+[submodule "deps/boost_core"]
+	path = deps/boost_core
+	url = https://github.com/boostorg/core.git
+[submodule "deps/boost_container_hash"]
+	path = deps/boost_container_hash
+	url = https://github.com/boostorg/container_hash.git
+[submodule "deps/boost_assert"]
+	path = deps/boost_assert
+	url = https://github.com/boostorg/assert.git
+[submodule "deps/boost_throw_exception"]
+	path = deps/boost_throw_exception
+	url = https://github.com/boostorg/throw_exception.git
+[submodule "deps/boost_static_assert"]
+	path = deps/boost_static_assert
+	url = https://github.com/boostorg/static_assert.git
+[submodule "deps/boost_mp11"]
+	path = deps/boost_mp11
+	url = https://github.com/boostorg/mp11.git
+[submodule "deps/boost_describe"]
+	path = deps/boost_describe
+	url = https://github.com/boostorg/describe.git
+[submodule "deps/boost_predef"]
+	path = deps/boost_predef
+	url = https://github.com/boostorg/predef.git
