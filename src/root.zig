@@ -26,14 +26,18 @@ const math = std.math;
 /// Empty bucket marker
 const EMPTY: u16 = 0x0000;
 
-/// Mask for the 8-bit hash fragment (bits 8-15)
-const HASH_FRAG_MASK: u16 = 0xFF00;
+/// User-configurable trade-off: number of hash fragment bits.
+/// Higher values → better collision filtering (fewer expensive key equality checks, especially good for string keys)
+/// Lower values → longer possible chains (fewer premature rehashes, better for large values or small tables)
+/// Recommended range: 4–10 (4 is original Verstable, 8–9 often sweet spot)
+pub const HASH_FRAG_SIZE_BITS: usize = 8; // Change this single value to tune!
 
-/// Flag indicating the key in this bucket belongs here (bit 7)
-const IN_HOME_BUCKET_MASK: u16 = 0x0080;
+/// Derived metadata masks (do not edit these directly)
+pub const HASH_FRAG_MASK: u16 = @as(u16, ((@as(u32, 1) << HASH_FRAG_SIZE_BITS) - 1) << (16 - HASH_FRAG_SIZE_BITS));
 
-/// Mask for the 7-bit displacement (bits 0-6). Also the end-of-chain marker.
-const DISPLACEMENT_MASK: u16 = 0x007F;
+pub const IN_HOME_BUCKET_MASK: u16 = @as(u16, 1) << (15 - HASH_FRAG_SIZE_BITS);
+
+pub const DISPLACEMENT_MASK: u16 = (@as(u16, 1) << (15 - HASH_FRAG_SIZE_BITS)) - 1;
 
 /// Minimum non-zero bucket count (must be power of two)
 const MIN_NONZERO_BUCKET_COUNT: usize = 8;
@@ -196,10 +200,9 @@ fn AutoEqlFn(comptime K: type) type {
 // Metadata Helpers
 // ============================================================================
 
-/// Extracts the 8-bit hash fragment from the highest bits of the 64-bit hash.
+/// Extracts the high HASH_FRAG_SIZE_BITS bits of the hash and places them into the fragment position.
 inline fn hashFrag(hash: u64) u16 {
-    // Top 8 bits of the hash → placed into metadata bits 8-15
-    return @as(u16, @truncate(hash >> 56)) << 8;
+    return @as(u16, @truncate(hash >> (64 - HASH_FRAG_SIZE_BITS))) << (16 - HASH_FRAG_SIZE_BITS);
 }
 
 /// Standard quadratic probing formula.
@@ -727,31 +730,50 @@ pub fn TheHashTableWithFns(
             const hash = hashFn(key);
             const home_bucket = hash & self.buckets_mask;
 
-            // Prefetch bucket data while we check metadata (hides memory latency)
-            @prefetch(&self.buckets[home_bucket], .{});
+            // Prefetch the home bucket (we will definitely access it)
+            @prefetch(&self.buckets[home_bucket], .{ .rw = .read });
 
-            // If home bucket is empty or contains non-belonging key, key doesn't exist
+            // If home bucket is empty or contains a non-home key, miss
             if ((self.metadata[home_bucket] & IN_HOME_BUCKET_MASK) == 0) {
                 @branchHint(.unlikely);
                 return .{ .bucket_idx = null, .home_bucket = home_bucket };
             }
 
-            // Traverse chain
             const frag = hashFrag(hash);
             var bucket = home_bucket;
+
             while (true) {
+                // Check current bucket for match
                 if ((self.metadata[bucket] & HASH_FRAG_MASK) == frag and
                     eqlFn(self.buckets[bucket].key, key))
                 {
                     return .{ .bucket_idx = bucket, .home_bucket = home_bucket };
                 }
 
+                // Get displacement of current bucket
                 const displacement = self.metadata[bucket] & DISPLACEMENT_MASK;
+
+                // End of chain?
                 if (displacement == DISPLACEMENT_MASK) {
                     @branchHint(.unlikely);
                     return .{ .bucket_idx = null, .home_bucket = home_bucket };
                 }
-                bucket = (home_bucket + quadratic(displacement)) & self.buckets_mask;
+
+                // Compute the *next* bucket in the chain
+                const next_bucket = (home_bucket + quadratic(displacement)) & self.buckets_mask;
+
+                // Prefetch the next bucket (we will access it next iteration)
+                @prefetch(&self.buckets[next_bucket], .{ .rw = .read, .locality = 1 });
+
+                // Optional: prefetch one step further ahead for longer chains
+                // const further_displacement = displacement + 1;
+                // if (further_displacement <= DISPLACEMENT_MASK) {
+                //     const further_bucket = (home_bucket + quadratic(further_displacement)) & self.buckets_mask;
+                //     @prefetch(&self.buckets[further_bucket], .{ .rw = .read, .locality = 1 });
+                // }
+
+                // Advance to next bucket
+                bucket = next_bucket;
             }
         }
 
@@ -996,6 +1018,11 @@ test "basic map operations" {
 
     // Remove non-existent
     try std.testing.expect(!map.remove(999));
+
+    std.debug.print("HASH_FRAG_SIZE_BITS: {any}\n", .{HASH_FRAG_SIZE_BITS});
+    std.debug.print("HASH_FRAG_MASK: {any}\n", .{HASH_FRAG_MASK});
+    std.debug.print("IN_HOME_BUCKET_MASK: {any}\n", .{IN_HOME_BUCKET_MASK});
+    std.debug.print("DISPLACEMENT_MASK: {any}\n", .{DISPLACEMENT_MASK});
 }
 
 test "basic set operations" {

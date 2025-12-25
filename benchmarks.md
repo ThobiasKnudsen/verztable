@@ -8,36 +8,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    81 ns      │    61 ns      │    46 ns      │  0.75x    │  0.57x    │
-  │ Rand. Lookup   │    19 ns      │    13 ns      │    25 ns      │  0.68x    │  1.32x    │
-  │ Lookup Miss    │    12 ns      │    11 ns      │    26 ns      │  0.92x    │  2.17x    │
-  │ Delete         │    13 ns      │    12 ns      │    23 ns      │  0.92x    │  1.77x    │
-  │ Iteration      │    14 ns      │    34 ns      │    11 ns      │  2.43x    │  0.79x    │
-  │ Churn          │    43 ns      │    46 ns      │    62 ns      │  1.07x    │  1.44x    │
+  │ Rand. Insert   │    31 ns      │    26 ns      │    22 ns      │  0.84x    │  0.71x    │
+  │ Rand. Lookup   │     7 ns      │     6 ns      │    11 ns      │  0.86x    │  1.57x    │
+  │ Lookup Miss    │     5 ns      │     4 ns      │    11 ns      │  0.80x    │  2.20x    │
+  │ Delete         │     5 ns      │     6 ns      │    10 ns      │  1.20x    │  2.00x    │
+  │ Iteration      │     6 ns      │    16 ns      │     5 ns      │  2.67x    │  0.83x    │
+  │ Churn          │    19 ns      │    20 ns      │    30 ns      │  1.05x    │  1.58x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    39 ns      │    52 ns      │    37 ns      │  1.33x    │  0.95x    │
-  │ Rand. Lookup   │     8 ns      │     8 ns      │    17 ns      │  1.00x    │  2.13x    │
-  │ Lookup Miss    │     6 ns      │     7 ns      │     9 ns      │  1.17x    │  1.50x    │
-  │ Delete         │     6 ns      │     8 ns      │    10 ns      │  1.33x    │  1.67x    │
-  │ Iteration      │     9 ns      │    28 ns      │     6 ns      │  3.11x    │  0.67x    │
-  │ Churn          │    37 ns      │    43 ns      │    59 ns      │  1.16x    │  1.59x    │
+  │ Rand. Insert   │    16 ns      │    23 ns      │    16 ns      │  1.44x    │  1.00x    │
+  │ Rand. Lookup   │     2 ns      │     4 ns      │     9 ns      │  2.00x    │  4.50x    │
+  │ Lookup Miss    │     2 ns      │     3 ns      │     4 ns      │  1.50x    │  2.00x    │
+  │ Delete         │     2 ns      │     4 ns      │     5 ns      │  2.00x    │  2.50x    │
+  │ Iteration      │     2 ns      │    12 ns      │     3 ns      │  6.00x    │  1.50x    │
+  │ Churn          │    17 ns      │    19 ns      │    27 ns      │  1.12x    │  1.59x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   65524 elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    65 ns      │    85 ns      │    64 ns      │  1.31x    │  0.98x    │
-  │ Rand. Lookup   │    12 ns      │    15 ns      │    19 ns      │  1.25x    │  1.58x    │
-  │ Lookup Miss    │     9 ns      │    11 ns      │    16 ns      │  1.22x    │  1.78x    │
-  │ Delete         │    11 ns      │    14 ns      │    17 ns      │  1.27x    │  1.55x    │
-  │ Iteration      │     6 ns      │    28 ns      │    12 ns      │  4.67x    │  2.00x    │
-  │ Churn          │    45 ns      │    48 ns      │    67 ns      │  1.07x    │  1.49x    │
+  │ Rand. Insert   │    29 ns      │    37 ns      │    28 ns      │  1.28x    │  0.97x    │
+  │ Rand. Lookup   │     5 ns      │     7 ns      │     8 ns      │  1.40x    │  1.60x    │
+  │ Lookup Miss    │     4 ns      │     4 ns      │     7 ns      │  1.00x    │  1.75x    │
+  │ Delete         │     4 ns      │     6 ns      │     7 ns      │  1.50x    │  1.75x    │
+  │ Iteration      │     3 ns      │    12 ns      │     5 ns      │  4.00x    │  1.67x    │
+  │ Churn          │    20 ns      │    22 ns      │    30 ns      │  1.10x    │  1.50x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -48,36 +48,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    63 ns      │   106 ns      │    66 ns      │  1.68x    │  1.05x    │
-  │ Rand. Lookup   │    57 ns      │    14 ns      │    26 ns      │  0.25x    │  0.46x    │
-  │ Lookup Miss    │    12 ns      │    11 ns      │    25 ns      │  0.92x    │  2.08x    │
-  │ Delete         │    24 ns      │    12 ns      │    22 ns      │  0.50x    │  0.92x    │
-  │ Iteration      │    13 ns      │    35 ns      │    10 ns      │  2.69x    │  0.77x    │
-  │ Churn          │    44 ns      │    50 ns      │    66 ns      │  1.14x    │  1.50x    │
+  │ Rand. Insert   │    39 ns      │    36 ns      │    28 ns      │  0.92x    │  0.72x    │
+  │ Rand. Lookup   │    14 ns      │     6 ns      │    12 ns      │  0.43x    │  0.86x    │
+  │ Lookup Miss    │     6 ns      │     5 ns      │    12 ns      │  0.83x    │  2.00x    │
+  │ Delete         │     5 ns      │     6 ns      │    11 ns      │  1.20x    │  2.20x    │
+  │ Iteration      │     6 ns      │    21 ns      │     5 ns      │  3.50x    │  0.83x    │
+  │ Churn          │    20 ns      │    27 ns      │    29 ns      │  1.35x    │  1.45x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    37 ns      │    56 ns      │    47 ns      │  1.51x    │  1.27x    │
-  │ Rand. Lookup   │    10 ns      │     9 ns      │    21 ns      │  0.90x    │  2.10x    │
-  │ Lookup Miss    │     5 ns      │     7 ns      │    13 ns      │  1.40x    │  2.60x    │
-  │ Delete         │     7 ns      │     8 ns      │    10 ns      │  1.14x    │  1.43x    │
-  │ Iteration      │     6 ns      │    28 ns      │     6 ns      │  4.67x    │  1.00x    │
-  │ Churn          │    38 ns      │    44 ns      │    61 ns      │  1.16x    │  1.61x    │
+  │ Rand. Insert   │    17 ns      │    26 ns      │    17 ns      │  1.53x    │  1.00x    │
+  │ Rand. Lookup   │     2 ns      │     4 ns      │     8 ns      │  2.00x    │  4.00x    │
+  │ Lookup Miss    │     3 ns      │     3 ns      │     4 ns      │  1.00x    │  1.33x    │
+  │ Delete         │     3 ns      │     4 ns      │     4 ns      │  1.33x    │  1.33x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    17 ns      │    20 ns      │    28 ns      │  1.18x    │  1.65x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   65524 elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    69 ns      │    91 ns      │    67 ns      │  1.32x    │  0.97x    │
-  │ Rand. Lookup   │    16 ns      │    17 ns      │    18 ns      │  1.06x    │  1.13x    │
-  │ Lookup Miss    │    10 ns      │    21 ns      │    14 ns      │  2.10x    │  1.40x    │
-  │ Delete         │    13 ns      │    18 ns      │    17 ns      │  1.38x    │  1.31x    │
-  │ Iteration      │     6 ns      │    28 ns      │    12 ns      │  4.67x    │  2.00x    │
-  │ Churn          │    46 ns      │    53 ns      │    77 ns      │  1.15x    │  1.67x    │
+  │ Rand. Insert   │    31 ns      │    41 ns      │    30 ns      │  1.32x    │  0.97x    │
+  │ Rand. Lookup   │     5 ns      │     7 ns      │     8 ns      │  1.40x    │  1.60x    │
+  │ Lookup Miss    │     4 ns      │     6 ns      │     7 ns      │  1.50x    │  1.75x    │
+  │ Delete         │     4 ns      │     6 ns      │     7 ns      │  1.50x    │  1.75x    │
+  │ Iteration      │     3 ns      │    12 ns      │     5 ns      │  4.00x    │  1.67x    │
+  │ Churn          │    20 ns      │    23 ns      │    34 ns      │  1.15x    │  1.70x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -88,36 +88,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   106 ns      │    76 ns      │    58 ns      │  0.72x    │  0.55x    │
-  │ Rand. Lookup   │    19 ns      │   429 ns      │    25 ns      │ 22.58x    │  1.32x    │
-  │ Lookup Miss    │    12 ns      │    12 ns      │    27 ns      │  1.00x    │  2.25x    │
-  │ Delete         │    14 ns      │    14 ns      │    20 ns      │  1.00x    │  1.43x    │
-  │ Iteration      │    13 ns      │    35 ns      │    11 ns      │  2.69x    │  0.85x    │
-  │ Churn          │    48 ns      │    47 ns      │    66 ns      │  0.98x    │  1.38x    │
+  │ Rand. Insert   │    58 ns      │   220 ns      │    27 ns      │  3.79x    │  0.47x    │
+  │ Rand. Lookup   │    16 ns      │     7 ns      │    15 ns      │  0.44x    │  0.94x    │
+  │ Lookup Miss    │     5 ns      │     5 ns      │    12 ns      │  1.00x    │  2.40x    │
+  │ Delete         │     5 ns      │     6 ns      │    10 ns      │  1.20x    │  2.00x    │
+  │ Iteration      │     6 ns      │    16 ns      │     5 ns      │  2.67x    │  0.83x    │
+  │ Churn          │    21 ns      │    22 ns      │    31 ns      │  1.05x    │  1.48x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    50 ns      │    71 ns      │    46 ns      │  1.42x    │  0.92x    │
-  │ Rand. Lookup   │     8 ns      │    10 ns      │    18 ns      │  1.25x    │  2.25x    │
-  │ Lookup Miss    │     6 ns      │     7 ns      │     9 ns      │  1.17x    │  1.50x    │
-  │ Delete         │     8 ns      │    10 ns      │    10 ns      │  1.25x    │  1.25x    │
-  │ Iteration      │     5 ns      │    27 ns      │     7 ns      │  5.40x    │  1.40x    │
-  │ Churn          │    40 ns      │    45 ns      │    61 ns      │  1.13x    │  1.53x    │
+  │ Rand. Insert   │    23 ns      │    34 ns      │    26 ns      │  1.48x    │  1.13x    │
+  │ Rand. Lookup   │     4 ns      │     4 ns      │     8 ns      │  1.00x    │  2.00x    │
+  │ Lookup Miss    │     3 ns      │     3 ns      │     4 ns      │  1.00x    │  1.33x    │
+  │ Delete         │     3 ns      │     4 ns      │     4 ns      │  1.33x    │  1.33x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    18 ns      │    21 ns      │    29 ns      │  1.17x    │  1.61x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   65524 elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   269 ns      │   263 ns      │   148 ns      │  0.98x    │  0.55x    │
-  │ Rand. Lookup   │    28 ns      │    17 ns      │    19 ns      │  0.61x    │  0.68x    │
-  │ Lookup Miss    │    18 ns      │    17 ns      │    15 ns      │  0.94x    │  0.83x    │
-  │ Delete         │    28 ns      │    31 ns      │    15 ns      │  1.11x    │  0.54x    │
-  │ Iteration      │     6 ns      │    28 ns      │    12 ns      │  4.67x    │  2.00x    │
-  │ Churn          │    60 ns      │    66 ns      │    81 ns      │  1.10x    │  1.35x    │
+  │ Rand. Insert   │   102 ns      │    97 ns      │    50 ns      │  0.95x    │  0.49x    │
+  │ Rand. Lookup   │     9 ns      │    13 ns      │     9 ns      │  1.44x    │  1.00x    │
+  │ Lookup Miss    │     7 ns      │     6 ns      │     6 ns      │  0.86x    │  0.86x    │
+  │ Delete         │    10 ns      │    10 ns      │     7 ns      │  1.00x    │  0.70x    │
+  │ Iteration      │     3 ns      │    12 ns      │     5 ns      │  4.00x    │  1.67x    │
+  │ Churn          │    24 ns      │    26 ns      │    33 ns      │  1.08x    │  1.38x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -128,36 +128,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   115 ns      │    97 ns      │    72 ns      │  0.84x    │  0.63x    │
-  │ Rand. Lookup   │    21 ns      │    13 ns      │    26 ns      │  0.62x    │  1.24x    │
-  │ Lookup Miss    │    13 ns      │    12 ns      │    25 ns      │  0.92x    │  1.92x    │
-  │ Delete         │    15 ns      │    15 ns      │    21 ns      │  1.00x    │  1.40x    │
-  │ Iteration      │    13 ns      │    36 ns      │    11 ns      │  2.77x    │  0.85x    │
-  │ Churn          │    54 ns      │    52 ns      │    74 ns      │  0.96x    │  1.37x    │
+  │ Rand. Insert   │    67 ns      │    49 ns      │    34 ns      │  0.73x    │  0.51x    │
+  │ Rand. Lookup   │    13 ns      │     7 ns      │    11 ns      │  0.54x    │  0.85x    │
+  │ Lookup Miss    │     5 ns      │     6 ns      │    12 ns      │  1.20x    │  2.40x    │
+  │ Delete         │     6 ns      │     7 ns      │     9 ns      │  1.17x    │  1.50x    │
+  │ Iteration      │     6 ns      │    16 ns      │     5 ns      │  2.67x    │  0.83x    │
+  │ Churn          │    27 ns      │    23 ns      │    35 ns      │  0.85x    │  1.30x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   122 ns      │   104 ns      │    74 ns      │  0.85x    │  0.61x    │
-  │ Rand. Lookup   │     7 ns      │     9 ns      │    23 ns      │  1.29x    │  3.29x    │
-  │ Lookup Miss    │     6 ns      │     7 ns      │     9 ns      │  1.17x    │  1.50x    │
-  │ Delete         │    12 ns      │    14 ns      │    13 ns      │  1.17x    │  1.08x    │
-  │ Iteration      │     6 ns      │    26 ns      │     6 ns      │  4.33x    │  1.00x    │
-  │ Churn          │    48 ns      │    54 ns      │    73 ns      │  1.13x    │  1.52x    │
+  │ Rand. Insert   │    75 ns      │    53 ns      │    43 ns      │  0.71x    │  0.57x    │
+  │ Rand. Lookup   │     3 ns      │     5 ns      │     8 ns      │  1.67x    │  2.67x    │
+  │ Lookup Miss    │     4 ns      │     3 ns      │     4 ns      │  0.75x    │  1.00x    │
+  │ Delete         │     8 ns      │     6 ns      │     4 ns      │  0.75x    │  0.50x    │
+  │ Iteration      │     2 ns      │    13 ns      │     3 ns      │  6.50x    │  1.50x    │
+  │ Churn          │    22 ns      │    25 ns      │    32 ns      │  1.14x    │  1.45x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   65524 elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   543 ns      │   420 ns      │   381 ns      │  0.77x    │  0.70x    │
-  │ Rand. Lookup   │    18 ns      │    26 ns      │    18 ns      │  1.44x    │  1.00x    │
-  │ Lookup Miss    │    13 ns      │    18 ns      │    15 ns      │  1.38x    │  1.15x    │
-  │ Delete         │    37 ns      │    45 ns      │    17 ns      │  1.22x    │  0.46x    │
-  │ Iteration      │     6 ns      │    27 ns      │    13 ns      │  4.50x    │  2.17x    │
-  │ Churn          │    94 ns      │   102 ns      │   101 ns      │  1.09x    │  1.07x    │
+  │ Rand. Insert   │   278 ns      │   250 ns      │   216 ns      │  0.90x    │  0.78x    │
+  │ Rand. Lookup   │     7 ns      │     9 ns      │     8 ns      │  1.29x    │  1.14x    │
+  │ Lookup Miss    │     5 ns      │     8 ns      │     6 ns      │  1.60x    │  1.20x    │
+  │ Delete         │    29 ns      │    42 ns      │     8 ns      │  1.45x    │  0.28x    │
+  │ Iteration      │     3 ns      │    13 ns      │     6 ns      │  4.33x    │  2.00x    │
+  │ Churn          │    44 ns      │    37 ns      │    47 ns      │  0.84x    │  1.07x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -168,36 +168,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    77 ns      │    63 ns      │    47 ns      │  0.82x    │  0.61x    │
-  │ Rand. Lookup   │    31 ns      │    15 ns      │    25 ns      │  0.48x    │  0.81x    │
-  │ Lookup Miss    │    14 ns      │    12 ns      │    24 ns      │  0.86x    │  1.71x    │
-  │ Delete         │    18 ns      │    17 ns      │    19 ns      │  0.94x    │  1.06x    │
-  │ Iteration      │    10 ns      │    36 ns      │    12 ns      │  3.60x    │  1.20x    │
-  │ Churn          │    44 ns      │    46 ns      │    62 ns      │  1.05x    │  1.41x    │
+  │ Rand. Insert   │    59 ns      │    34 ns      │    23 ns      │  0.58x    │  0.39x    │
+  │ Rand. Lookup   │     9 ns      │     7 ns      │    11 ns      │  0.78x    │  1.22x    │
+  │ Lookup Miss    │     6 ns      │     5 ns      │    12 ns      │  0.83x    │  2.00x    │
+  │ Delete         │     6 ns      │     8 ns      │     8 ns      │  1.33x    │  1.33x    │
+  │ Iteration      │     4 ns      │    16 ns      │    10 ns      │  4.00x    │  2.50x    │
+  │ Churn          │    20 ns      │    23 ns      │    30 ns      │  1.15x    │  1.50x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    48 ns      │    55 ns      │    38 ns      │  1.15x    │  0.79x    │
-  │ Rand. Lookup   │    17 ns      │    10 ns      │    16 ns      │  0.59x    │  0.94x    │
-  │ Lookup Miss    │     7 ns      │    13 ns      │    14 ns      │  1.86x    │  2.00x    │
-  │ Delete         │     7 ns      │     8 ns      │     9 ns      │  1.14x    │  1.29x    │
-  │ Iteration      │     6 ns      │    27 ns      │     7 ns      │  4.50x    │  1.17x    │
-  │ Churn          │    37 ns      │    41 ns      │    67 ns      │  1.11x    │  1.81x    │
+  │ Rand. Insert   │    16 ns      │    27 ns      │    17 ns      │  1.69x    │  1.06x    │
+  │ Rand. Lookup   │     5 ns      │     4 ns      │     7 ns      │  0.80x    │  1.40x    │
+  │ Lookup Miss    │     5 ns      │     6 ns      │     6 ns      │  1.20x    │  1.20x    │
+  │ Delete         │     3 ns      │     3 ns      │     4 ns      │  1.00x    │  1.33x    │
+  │ Iteration      │     3 ns      │    12 ns      │     3 ns      │  4.00x    │  1.00x    │
+  │ Churn          │    17 ns      │    21 ns      │    28 ns      │  1.24x    │  1.65x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    65 ns      │    82 ns      │    57 ns      │  1.26x    │  0.88x    │
-  │ Rand. Lookup   │    18 ns      │    24 ns      │    32 ns      │  1.33x    │  1.78x    │
-  │ Lookup Miss    │    19 ns      │    21 ns      │    41 ns      │  1.11x    │  2.16x    │
-  │ Delete         │    16 ns      │    21 ns      │    23 ns      │  1.31x    │  1.44x    │
-  │ Iteration      │     5 ns      │    26 ns      │     5 ns      │  5.20x    │  1.00x    │
-  │ Churn          │    69 ns      │    73 ns      │   276 ns      │  1.06x    │  4.00x    │
+  │ Rand. Insert   │    29 ns      │    35 ns      │    25 ns      │  1.21x    │  0.86x    │
+  │ Rand. Lookup   │     8 ns      │    10 ns      │    13 ns      │  1.25x    │  1.63x    │
+  │ Lookup Miss    │     8 ns      │     9 ns      │    20 ns      │  1.13x    │  2.50x    │
+  │ Delete         │     7 ns      │     8 ns      │    10 ns      │  1.14x    │  1.43x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    28 ns      │    29 ns      │   108 ns      │  1.04x    │  3.86x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -208,36 +208,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   102 ns      │    79 ns      │    83 ns      │  0.77x    │  0.81x    │
-  │ Rand. Lookup   │    29 ns      │    17 ns      │    33 ns      │  0.59x    │  1.14x    │
-  │ Lookup Miss    │    17 ns      │    16 ns      │    32 ns      │  0.94x    │  1.88x    │
-  │ Delete         │    18 ns      │    20 ns      │    22 ns      │  1.11x    │  1.22x    │
-  │ Iteration      │    11 ns      │    36 ns      │    14 ns      │  3.27x    │  1.27x    │
-  │ Churn          │    59 ns      │    52 ns      │    81 ns      │  0.88x    │  1.37x    │
+  │ Rand. Insert   │    49 ns      │    36 ns      │    27 ns      │  0.73x    │  0.55x    │
+  │ Rand. Lookup   │    15 ns      │     7 ns      │    11 ns      │  0.47x    │  0.73x    │
+  │ Lookup Miss    │    15 ns      │     5 ns      │    11 ns      │  0.33x    │  0.73x    │
+  │ Delete         │     7 ns      │     8 ns      │    10 ns      │  1.14x    │  1.43x    │
+  │ Iteration      │     4 ns      │    16 ns      │     4 ns      │  4.00x    │  1.00x    │
+  │ Churn          │    21 ns      │    23 ns      │    32 ns      │  1.10x    │  1.52x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    39 ns      │    58 ns      │    39 ns      │  1.49x    │  1.00x    │
-  │ Rand. Lookup   │    11 ns      │    10 ns      │    19 ns      │  0.91x    │  1.73x    │
-  │ Lookup Miss    │     8 ns      │     8 ns      │    13 ns      │  1.00x    │  1.63x    │
-  │ Delete         │     7 ns      │     9 ns      │     9 ns      │  1.29x    │  1.29x    │
-  │ Iteration      │     6 ns      │    27 ns      │     7 ns      │  4.50x    │  1.17x    │
-  │ Churn          │    42 ns      │    42 ns      │    62 ns      │  1.00x    │  1.48x    │
+  │ Rand. Insert   │    18 ns      │    29 ns      │    17 ns      │  1.61x    │  0.94x    │
+  │ Rand. Lookup   │     3 ns      │     5 ns      │     7 ns      │  1.67x    │  2.33x    │
+  │ Lookup Miss    │     3 ns      │     3 ns      │     6 ns      │  1.00x    │  2.00x    │
+  │ Delete         │     3 ns      │     4 ns      │     4 ns      │  1.33x    │  1.33x    │
+  │ Iteration      │     3 ns      │    12 ns      │     3 ns      │  4.00x    │  1.00x    │
+  │ Churn          │    17 ns      │    19 ns      │    28 ns      │  1.12x    │  1.65x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    71 ns      │    85 ns      │    60 ns      │  1.20x    │  0.85x    │
-  │ Rand. Lookup   │    22 ns      │    26 ns      │    33 ns      │  1.18x    │  1.50x    │
-  │ Lookup Miss    │    20 ns      │    21 ns      │    40 ns      │  1.05x    │  2.00x    │
-  │ Delete         │    16 ns      │    22 ns      │    22 ns      │  1.38x    │  1.38x    │
-  │ Iteration      │     5 ns      │    27 ns      │     5 ns      │  5.40x    │  1.00x    │
-  │ Churn          │    68 ns      │    79 ns      │   279 ns      │  1.16x    │  4.10x    │
+  │ Rand. Insert   │    31 ns      │    39 ns      │    27 ns      │  1.26x    │  0.87x    │
+  │ Rand. Lookup   │     9 ns      │    10 ns      │    13 ns      │  1.11x    │  1.44x    │
+  │ Lookup Miss    │     8 ns      │     9 ns      │    17 ns      │  1.13x    │  2.13x    │
+  │ Delete         │     7 ns      │     9 ns      │    10 ns      │  1.29x    │  1.43x    │
+  │ Iteration      │     2 ns      │    11 ns      │     2 ns      │  5.50x    │  1.00x    │
+  │ Churn          │    28 ns      │    30 ns      │   110 ns      │  1.07x    │  3.93x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -248,36 +248,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    94 ns      │    73 ns      │    58 ns      │  0.78x    │  0.62x    │
-  │ Rand. Lookup   │    24 ns      │    17 ns      │    26 ns      │  0.71x    │  1.08x    │
-  │ Lookup Miss    │    14 ns      │    12 ns      │    24 ns      │  0.86x    │  1.71x    │
-  │ Delete         │    15 ns      │    18 ns      │    18 ns      │  1.20x    │  1.20x    │
-  │ Iteration      │    11 ns      │    36 ns      │    11 ns      │  3.27x    │  1.00x    │
-  │ Churn          │    50 ns      │    49 ns      │    68 ns      │  0.98x    │  1.36x    │
+  │ Rand. Insert   │    50 ns      │    45 ns      │    29 ns      │  0.90x    │  0.58x    │
+  │ Rand. Lookup   │    13 ns      │     8 ns      │    12 ns      │  0.62x    │  0.92x    │
+  │ Lookup Miss    │    17 ns      │     7 ns      │    11 ns      │  0.41x    │  0.65x    │
+  │ Delete         │     7 ns      │     8 ns      │     9 ns      │  1.14x    │  1.29x    │
+  │ Iteration      │     5 ns      │    16 ns      │    11 ns      │  3.20x    │  2.20x    │
+  │ Churn          │    24 ns      │    22 ns      │    31 ns      │  0.92x    │  1.29x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    48 ns      │    69 ns      │    49 ns      │  1.44x    │  1.02x    │
-  │ Rand. Lookup   │     9 ns      │    10 ns      │    19 ns      │  1.11x    │  2.11x    │
-  │ Lookup Miss    │     7 ns      │     8 ns      │    12 ns      │  1.14x    │  1.71x    │
-  │ Delete         │     8 ns      │     9 ns      │     9 ns      │  1.13x    │  1.13x    │
-  │ Iteration      │     6 ns      │    26 ns      │     6 ns      │  4.33x    │  1.00x    │
-  │ Churn          │    39 ns      │    44 ns      │    65 ns      │  1.13x    │  1.67x    │
+  │ Rand. Insert   │    22 ns      │    30 ns      │    24 ns      │  1.36x    │  1.09x    │
+  │ Rand. Lookup   │     3 ns      │     4 ns      │     7 ns      │  1.33x    │  2.33x    │
+  │ Lookup Miss    │     3 ns      │     3 ns      │     6 ns      │  1.00x    │  2.00x    │
+  │ Delete         │     3 ns      │     4 ns      │     4 ns      │  1.33x    │  1.33x    │
+  │ Iteration      │     3 ns      │    12 ns      │     3 ns      │  4.00x    │  1.00x    │
+  │ Churn          │    18 ns      │    21 ns      │    29 ns      │  1.17x    │  1.61x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   118 ns      │   135 ns      │    98 ns      │  1.14x    │  0.83x    │
-  │ Rand. Lookup   │    26 ns      │    38 ns      │    31 ns      │  1.46x    │  1.19x    │
-  │ Lookup Miss    │    18 ns      │    21 ns      │    39 ns      │  1.17x    │  2.17x    │
-  │ Delete         │    24 ns      │    48 ns      │    24 ns      │  2.00x    │  1.00x    │
-  │ Iteration      │     5 ns      │    26 ns      │     5 ns      │  5.20x    │  1.00x    │
-  │ Churn          │    77 ns      │    95 ns      │   307 ns      │  1.23x    │  3.99x    │
+  │ Rand. Insert   │    86 ns      │    82 ns      │    61 ns      │  0.95x    │  0.71x    │
+  │ Rand. Lookup   │    11 ns      │    57 ns      │    16 ns      │  5.18x    │  1.45x    │
+  │ Lookup Miss    │    10 ns      │    12 ns      │    23 ns      │  1.20x    │  2.30x    │
+  │ Delete         │    25 ns      │    17 ns      │    12 ns      │  0.68x    │  0.48x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    34 ns      │    42 ns      │   128 ns      │  1.24x    │  3.76x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -288,36 +288,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   120 ns      │   106 ns      │    69 ns      │  0.88x    │  0.58x    │
-  │ Rand. Lookup   │    26 ns      │    18 ns      │    24 ns      │  0.69x    │  0.92x    │
-  │ Lookup Miss    │    14 ns      │    11 ns      │    24 ns      │  0.79x    │  1.71x    │
-  │ Delete         │    17 ns      │    21 ns      │    20 ns      │  1.24x    │  1.18x    │
-  │ Iteration      │    10 ns      │    36 ns      │    11 ns      │  3.60x    │  1.10x    │
-  │ Churn          │    54 ns      │    55 ns      │    71 ns      │  1.02x    │  1.31x    │
+  │ Rand. Insert   │   290 ns      │    64 ns      │    38 ns      │  0.22x    │  0.13x    │
+  │ Rand. Lookup   │    23 ns      │     9 ns      │    12 ns      │  0.39x    │  0.52x    │
+  │ Lookup Miss    │     7 ns      │     5 ns      │    12 ns      │  0.71x    │  1.71x    │
+  │ Delete         │     9 ns      │    10 ns      │    10 ns      │  1.11x    │  1.11x    │
+  │ Iteration      │     8 ns      │    17 ns      │     6 ns      │  2.13x    │  0.75x    │
+  │ Churn          │    30 ns      │    26 ns      │    34 ns      │  0.87x    │  1.13x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   112 ns      │   101 ns      │    77 ns      │  0.90x    │  0.69x    │
-  │ Rand. Lookup   │     8 ns      │    11 ns      │    16 ns      │  1.38x    │  2.00x    │
-  │ Lookup Miss    │     8 ns      │     9 ns      │    16 ns      │  1.13x    │  2.00x    │
-  │ Delete         │    13 ns      │    17 ns      │     9 ns      │  1.31x    │  0.69x    │
-  │ Iteration      │     6 ns      │    26 ns      │     6 ns      │  4.33x    │  1.00x    │
-  │ Churn          │    49 ns      │    53 ns      │    73 ns      │  1.08x    │  1.49x    │
+  │ Rand. Insert   │    70 ns      │    51 ns      │    42 ns      │  0.73x    │  0.60x    │
+  │ Rand. Lookup   │     5 ns      │     5 ns      │     8 ns      │  1.00x    │  1.60x    │
+  │ Lookup Miss    │     3 ns      │     4 ns      │     7 ns      │  1.33x    │  2.33x    │
+  │ Delete         │     6 ns      │     6 ns      │     4 ns      │  1.00x    │  0.67x    │
+  │ Iteration      │     3 ns      │    13 ns      │     3 ns      │  4.33x    │  1.00x    │
+  │ Churn          │    23 ns      │    26 ns      │    32 ns      │  1.13x    │  1.39x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.AutoHash  │ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   357 ns      │   379 ns      │   322 ns      │  1.06x    │  0.90x    │
-  │ Rand. Lookup   │    32 ns      │    48 ns      │    31 ns      │  1.50x    │  0.97x    │
-  │ Lookup Miss    │    20 ns      │    22 ns      │    42 ns      │  1.10x    │  2.10x    │
-  │ Delete         │    66 ns      │    63 ns      │    26 ns      │  0.95x    │  0.39x    │
-  │ Iteration      │     5 ns      │    26 ns      │     6 ns      │  5.20x    │  1.20x    │
-  │ Churn          │   132 ns      │   132 ns      │   323 ns      │  1.00x    │  2.45x    │
+  │ Rand. Insert   │   225 ns      │   225 ns      │   214 ns      │  1.00x    │  0.95x    │
+  │ Rand. Lookup   │    14 ns      │    14 ns      │    13 ns      │  1.00x    │  0.93x    │
+  │ Lookup Miss    │     9 ns      │     9 ns      │    17 ns      │  1.00x    │  1.89x    │
+  │ Delete         │    32 ns      │    37 ns      │    11 ns      │  1.16x    │  0.34x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    64 ns      │    82 ns      │   147 ns      │  1.28x    │  2.30x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -328,36 +328,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   118 ns      │   119 ns      │    64 ns      │  1.01x    │  0.54x    │
-  │ Rand. Lookup   │    97 ns      │    49 ns      │    29 ns      │  0.51x    │  0.30x    │
-  │ Lookup Miss    │    27 ns      │    43 ns      │    27 ns      │  1.59x    │  1.00x    │
-  │ Delete         │    35 ns      │    52 ns      │    28 ns      │  1.49x    │  0.80x    │
-  │ Iteration      │    13 ns      │    35 ns      │    12 ns      │  2.69x    │  0.92x    │
-  │ Churn          │    66 ns      │    92 ns      │    68 ns      │  1.39x    │  1.03x    │
+  │ Rand. Insert   │    63 ns      │    57 ns      │    36 ns      │  0.90x    │  0.57x    │
+  │ Rand. Lookup   │    42 ns      │    22 ns      │    13 ns      │  0.52x    │  0.31x    │
+  │ Lookup Miss    │    11 ns      │    20 ns      │    12 ns      │  1.82x    │  1.09x    │
+  │ Delete         │    15 ns      │    25 ns      │    12 ns      │  1.67x    │  0.80x    │
+  │ Iteration      │     7 ns      │    16 ns      │     5 ns      │  2.29x    │  0.71x    │
+  │ Churn          │    30 ns      │    42 ns      │    31 ns      │  1.40x    │  1.03x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    64 ns      │   171 ns      │    86 ns      │  2.67x    │  1.34x    │
-  │ Rand. Lookup   │    54 ns      │    56 ns      │    30 ns      │  1.04x    │  0.56x    │
-  │ Lookup Miss    │    16 ns      │    38 ns      │    22 ns      │  2.38x    │  1.38x    │
-  │ Delete         │    21 ns      │    53 ns      │    30 ns      │  2.52x    │  1.43x    │
-  │ Iteration      │     6 ns      │    27 ns      │     6 ns      │  4.50x    │  1.00x    │
-  │ Churn          │    52 ns      │    92 ns      │    63 ns      │  1.77x    │  1.21x    │
+  │ Rand. Insert   │    28 ns      │    90 ns      │    43 ns      │  3.21x    │  1.54x    │
+  │ Rand. Lookup   │    28 ns      │    24 ns      │    13 ns      │  0.86x    │  0.46x    │
+  │ Lookup Miss    │     7 ns      │    17 ns      │    10 ns      │  2.43x    │  1.43x    │
+  │ Delete         │     9 ns      │    21 ns      │    11 ns      │  2.33x    │  1.22x    │
+  │ Iteration      │     3 ns      │    12 ns      │     3 ns      │  4.00x    │  1.00x    │
+  │ Churn          │    24 ns      │    42 ns      │    29 ns      │  1.75x    │  1.21x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   121 ns      │   252 ns      │   127 ns      │  2.08x    │  1.05x    │
-  │ Rand. Lookup   │   154 ns      │   298 ns      │   171 ns      │  1.94x    │  1.11x    │
-  │ Lookup Miss    │    44 ns      │    81 ns      │    66 ns      │  1.84x    │  1.50x    │
-  │ Delete         │    61 ns      │   107 ns      │    45 ns      │  1.75x    │  0.74x    │
-  │ Iteration      │     6 ns      │    26 ns      │     5 ns      │  4.33x    │  0.83x    │
-  │ Churn          │   167 ns      │   315 ns      │   414 ns      │  1.89x    │  2.48x    │
+  │ Rand. Insert   │    55 ns      │    95 ns      │    42 ns      │  1.73x    │  0.76x    │
+  │ Rand. Lookup   │    28 ns      │    46 ns      │    31 ns      │  1.64x    │  1.11x    │
+  │ Lookup Miss    │    16 ns      │    29 ns      │    25 ns      │  1.81x    │  1.56x    │
+  │ Delete         │    16 ns      │    31 ns      │    18 ns      │  1.94x    │  1.13x    │
+  │ Iteration      │     2 ns      │    11 ns      │     2 ns      │  5.50x    │  1.00x    │
+  │ Churn          │    53 ns      │    72 ns      │    96 ns      │  1.36x    │  1.81x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -368,36 +368,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   139 ns      │   144 ns      │   370 ns      │  1.04x    │  2.66x    │
-  │ Rand. Lookup   │   156 ns      │    53 ns      │    27 ns      │  0.34x    │  0.17x    │
-  │ Lookup Miss    │    32 ns      │    41 ns      │    27 ns      │  1.28x    │  0.84x    │
-  │ Delete         │    36 ns      │    60 ns      │    27 ns      │  1.67x    │  0.75x    │
-  │ Iteration      │    13 ns      │    35 ns      │    12 ns      │  2.69x    │  0.92x    │
-  │ Churn          │    67 ns      │    95 ns      │    68 ns      │  1.42x    │  1.01x    │
+  │ Rand. Insert   │    67 ns      │    62 ns      │    42 ns      │  0.93x    │  0.63x    │
+  │ Rand. Lookup   │    18 ns      │    23 ns      │    12 ns      │  1.28x    │  0.67x    │
+  │ Lookup Miss    │    12 ns      │    20 ns      │    13 ns      │  1.67x    │  1.08x    │
+  │ Delete         │    16 ns      │    25 ns      │    12 ns      │  1.56x    │  0.75x    │
+  │ Iteration      │     6 ns      │    16 ns      │     5 ns      │  2.67x    │  0.83x    │
+  │ Churn          │    30 ns      │    44 ns      │    32 ns      │  1.47x    │  1.07x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │    70 ns      │   194 ns      │    94 ns      │  2.77x    │  1.34x    │
-  │ Rand. Lookup   │    43 ns      │    51 ns      │    27 ns      │  1.19x    │  0.63x    │
-  │ Lookup Miss    │    16 ns      │    38 ns      │    22 ns      │  2.38x    │  1.38x    │
-  │ Delete         │    21 ns      │    46 ns      │    23 ns      │  2.19x    │  1.10x    │
-  │ Iteration      │     6 ns      │    26 ns      │     5 ns      │  4.33x    │  0.83x    │
-  │ Churn          │    55 ns      │    89 ns      │    63 ns      │  1.62x    │  1.15x    │
+  │ Rand. Insert   │    31 ns      │    88 ns      │    42 ns      │  2.84x    │  1.35x    │
+  │ Rand. Lookup   │    12 ns      │    24 ns      │    13 ns      │  2.00x    │  1.08x    │
+  │ Lookup Miss    │     7 ns      │    17 ns      │    10 ns      │  2.43x    │  1.43x    │
+  │ Delete         │     9 ns      │    21 ns      │    11 ns      │  2.33x    │  1.22x    │
+  │ Iteration      │     3 ns      │    13 ns      │     2 ns      │  4.33x    │  0.67x    │
+  │ Churn          │    25 ns      │    41 ns      │    29 ns      │  1.64x    │  1.16x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   170 ns      │   326 ns      │   154 ns      │  1.92x    │  0.91x    │
-  │ Rand. Lookup   │   149 ns      │   299 ns      │   161 ns      │  2.01x    │  1.08x    │
-  │ Lookup Miss    │    44 ns      │    76 ns      │    65 ns      │  1.73x    │  1.48x    │
-  │ Delete         │    60 ns      │    98 ns      │    51 ns      │  1.63x    │  0.85x    │
-  │ Iteration      │     5 ns      │    26 ns      │     5 ns      │  5.20x    │  1.00x    │
-  │ Churn          │   175 ns      │   303 ns      │   368 ns      │  1.73x    │  2.10x    │
+  │ Rand. Insert   │    50 ns      │   100 ns      │    44 ns      │  2.00x    │  0.88x    │
+  │ Rand. Lookup   │    31 ns      │    42 ns      │    29 ns      │  1.35x    │  0.94x    │
+  │ Lookup Miss    │    17 ns      │    30 ns      │    25 ns      │  1.76x    │  1.47x    │
+  │ Delete         │    16 ns      │    31 ns      │    18 ns      │  1.94x    │  1.13x    │
+  │ Iteration      │     2 ns      │    12 ns      │     3 ns      │  6.00x    │  1.50x    │
+  │ Churn          │    56 ns      │    72 ns      │   101 ns      │  1.29x    │  1.80x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -408,36 +408,36 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   222 ns      │   149 ns      │   100 ns      │  0.67x    │  0.45x    │
-  │ Rand. Lookup   │   116 ns      │    47 ns      │    29 ns      │  0.41x    │  0.25x    │
-  │ Lookup Miss    │    66 ns      │    43 ns      │    27 ns      │  0.65x    │  0.41x    │
-  │ Delete         │    36 ns      │    52 ns      │    26 ns      │  1.44x    │  0.72x    │
-  │ Iteration      │    13 ns      │    35 ns      │    12 ns      │  2.69x    │  0.92x    │
-  │ Churn          │    66 ns      │    98 ns      │    70 ns      │  1.48x    │  1.06x    │
+  │ Rand. Insert   │    70 ns      │    67 ns      │    42 ns      │  0.96x    │  0.60x    │
+  │ Rand. Lookup   │    16 ns      │    21 ns      │    12 ns      │  1.31x    │  0.75x    │
+  │ Lookup Miss    │    12 ns      │    19 ns      │    12 ns      │  1.58x    │  1.00x    │
+  │ Delete         │    15 ns      │    25 ns      │    12 ns      │  1.67x    │  0.80x    │
+  │ Iteration      │     6 ns      │    16 ns      │     5 ns      │  2.67x    │  0.83x    │
+  │ Churn          │    30 ns      │    42 ns      │    31 ns      │  1.40x    │  1.03x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   120 ns      │   204 ns      │   101 ns      │  1.70x    │  0.84x    │
-  │ Rand. Lookup   │    42 ns      │    58 ns      │    27 ns      │  1.38x    │  0.64x    │
-  │ Lookup Miss    │    19 ns      │    38 ns      │    22 ns      │  2.00x    │  1.16x    │
-  │ Delete         │    21 ns      │    50 ns      │    24 ns      │  2.38x    │  1.14x    │
-  │ Iteration      │     6 ns      │    28 ns      │     6 ns      │  4.67x    │  1.00x    │
-  │ Churn          │    57 ns      │    93 ns      │    66 ns      │  1.63x    │  1.16x    │
+  │ Rand. Insert   │    35 ns      │    96 ns      │    45 ns      │  2.74x    │  1.29x    │
+  │ Rand. Lookup   │    12 ns      │    24 ns      │    13 ns      │  2.00x    │  1.08x    │
+  │ Lookup Miss    │     8 ns      │    18 ns      │    11 ns      │  2.25x    │  1.38x    │
+  │ Delete         │    11 ns      │    24 ns      │    11 ns      │  2.18x    │  1.00x    │
+  │ Iteration      │     3 ns      │    12 ns      │     2 ns      │  4.00x    │  0.67x    │
+  │ Churn          │    25 ns      │    42 ns      │    30 ns      │  1.68x    │  1.20x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   206 ns      │   346 ns      │   166 ns      │  1.68x    │  0.81x    │
-  │ Rand. Lookup   │   148 ns      │   228 ns      │   112 ns      │  1.54x    │  0.76x    │
-  │ Lookup Miss    │    44 ns      │    72 ns      │    64 ns      │  1.64x    │  1.45x    │
-  │ Delete         │    79 ns      │   120 ns      │    60 ns      │  1.52x    │  0.76x    │
-  │ Iteration      │     5 ns      │    28 ns      │     5 ns      │  5.60x    │  1.00x    │
-  │ Churn          │   200 ns      │   314 ns      │   378 ns      │  1.57x    │  1.89x    │
+  │ Rand. Insert   │    90 ns      │   113 ns      │    77 ns      │  1.26x    │  0.86x    │
+  │ Rand. Lookup   │    57 ns      │    53 ns      │    30 ns      │  0.93x    │  0.53x    │
+  │ Lookup Miss    │    18 ns      │    30 ns      │    26 ns      │  1.67x    │  1.44x    │
+  │ Delete         │    36 ns      │    62 ns      │    24 ns      │  1.72x    │  0.67x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │    80 ns      │   109 ns      │   106 ns      │  1.36x    │  1.33x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -448,35 +448,35 @@
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   195 ns      │   176 ns      │    98 ns      │  0.90x    │  0.50x    │
-  │ Rand. Lookup   │   172 ns      │    47 ns      │    27 ns      │  0.27x    │  0.16x    │
-  │ Lookup Miss    │    42 ns      │    40 ns      │    27 ns      │  0.95x    │  0.64x    │
-  │ Delete         │    53 ns      │    73 ns      │    46 ns      │  1.38x    │  0.87x    │
-  │ Iteration      │    13 ns      │    37 ns      │    16 ns      │  2.85x    │  1.23x    │
-  │ Churn          │    99 ns      │   102 ns      │    88 ns      │  1.03x    │  0.89x    │
+  │ Rand. Insert   │    92 ns      │    79 ns      │    46 ns      │  0.86x    │  0.50x    │
+  │ Rand. Lookup   │    35 ns      │    22 ns      │    12 ns      │  0.63x    │  0.34x    │
+  │ Lookup Miss    │    19 ns      │    19 ns      │    12 ns      │  1.00x    │  0.63x    │
+  │ Delete         │    19 ns      │    28 ns      │    13 ns      │  1.47x    │  0.68x    │
+  │ Iteration      │     6 ns      │    17 ns      │     5 ns      │  2.83x    │  0.83x    │
+  │ Churn          │    34 ns      │    48 ns      │    34 ns      │  1.41x    │  1.00x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   1K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   291 ns      │   240 ns      │   148 ns      │  0.82x    │  0.51x    │
-  │ Rand. Lookup   │    57 ns      │    77 ns      │    27 ns      │  1.35x    │  0.47x    │
-  │ Lookup Miss    │    25 ns      │    37 ns      │    22 ns      │  1.48x    │  0.88x    │
-  │ Delete         │    31 ns      │    54 ns      │    27 ns      │  1.74x    │  0.87x    │
-  │ Iteration      │     6 ns      │    27 ns      │     6 ns      │  4.50x    │  1.00x    │
-  │ Churn          │    66 ns      │   109 ns      │    73 ns      │  1.65x    │  1.11x    │
+  │ Rand. Insert   │   106 ns      │   115 ns      │    60 ns      │  1.08x    │  0.57x    │
+  │ Rand. Lookup   │    18 ns      │    25 ns      │    13 ns      │  1.39x    │  0.72x    │
+  │ Lookup Miss    │    11 ns      │    17 ns      │    10 ns      │  1.55x    │  0.91x    │
+  │ Delete         │    13 ns      │    30 ns      │    12 ns      │  2.31x    │  0.92x    │
+  │ Iteration      │     3 ns      │    12 ns      │     2 ns      │  4.00x    │  0.67x    │
+  │ Churn          │    28 ns      │    52 ns      │    35 ns      │  1.86x    │  1.25x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 
   100K elements:
   ┌────────────────┬───────────────┬───────────────┬───────────────┬───────────┬───────────┐
   │ Operation      │ TheHashTable  │ Verstable (C) │ std.StringHash│ vs Verst. │ vs std    │
   ├────────────────┼───────────────┼───────────────┼───────────────┼───────────┼───────────┤
-  │ Rand. Insert   │   465 ns      │   554 ns      │   433 ns      │  1.19x    │  0.93x    │
-  │ Rand. Lookup   │   187 ns      │   214 ns      │   106 ns      │  1.14x    │  0.57x    │
-  │ Lookup Miss    │    51 ns      │    73 ns      │    63 ns      │  1.43x    │  1.24x    │
-  │ Delete         │   114 ns      │   143 ns      │    56 ns      │  1.25x    │  0.49x    │
-  │ Iteration      │     5 ns      │    27 ns      │     5 ns      │  5.40x    │  1.00x    │
-  │ Churn          │   254 ns      │   371 ns      │   432 ns      │  1.46x    │  1.70x    │
+  │ Rand. Insert   │   262 ns      │   349 ns      │   288 ns      │  1.33x    │  1.10x    │
+  │ Rand. Lookup   │   118 ns      │   105 ns      │    35 ns      │  0.89x    │  0.30x    │
+  │ Lookup Miss    │    20 ns      │    30 ns      │    28 ns      │  1.50x    │  1.40x    │
+  │ Delete         │    77 ns      │    97 ns      │    23 ns      │  1.26x    │  0.30x    │
+  │ Iteration      │     2 ns      │    12 ns      │     2 ns      │  6.00x    │  1.00x    │
+  │ Churn          │   119 ns      │   224 ns      │   182 ns      │  1.88x    │  1.53x    │
   └────────────────┴───────────────┴───────────────┴───────────────┴───────────┴───────────┘
 ```
