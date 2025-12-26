@@ -33,7 +33,7 @@ const EMPTY: MetaType = 0x0000;
 /// User-configurable trade-off: number of hash fragment bits.
 /// Higher values → better collision filtering (fewer expensive key equality checks, especially good for string keys)
 /// Lower values → longer possible chains (fewer premature rehashes, better for large values or small tables)
-/// Recommended range: 4–10 (4 is original Verstable, 8–9 often sweet spot)
+/// Recommended range: 4–10
 pub const HASH_FRAG_SIZE_BITS: usize = 4; // Change this single value to tune!
 
 /// Derived metadata masks (do not edit these directly)

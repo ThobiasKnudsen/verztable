@@ -17,8 +17,9 @@ const cpp = @cImport({
 
 const WARMUP_ITERATIONS = 3;
 const BENCHMARK_ITERATIONS = 15;
-const SIZE_10: usize = 10;
-const SIZE_1K: usize = 1_000;
+const SIZE_100: usize = 100;
+const SIZE_1K: usize = 1_000; // Used for memory benchmarks
+const SIZE_3K: usize = 3_000;
 const SIZE_100K: usize = 100_000;
 const SIZE_1M: usize = 1_000_000;
 
@@ -187,6 +188,11 @@ const BenchOp = enum {
     mixed,
     tombstone,
     high_load,
+    // Additional mixed workloads
+    read_heavy, // 95% lookup, 3% insert, 2% delete (cache-like)
+    write_heavy, // 70% insert, 20% lookup, 10% delete (streaming)
+    update_heavy, // 80% update, 15% lookup, 5% insert (counters)
+    zipfian, // Skewed access - 80% of ops hit 20% of keys
 };
 
 fn Benchmarks(comptime K: type, comptime V: type) type {
@@ -349,6 +355,115 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
                         }
                         std.mem.doNotOptimizeAway(found);
                     },
+                    .read_heavy => {
+                        // 95% lookup, 3% insert, 2% delete
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => { // lookup
+                                    if (is_set) {
+                                        if (map.contains(mixed_data.hit_keys[idx])) found += 1;
+                                    } else {
+                                        if (map.get(mixed_data.hit_keys[idx]) != null) found += 1;
+                                    }
+                                },
+                                1 => { // insert
+                                    if (is_set) try map.add(mixed_data.miss_keys[idx]) else try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx])));
+                                },
+                                else => { // delete
+                                    _ = map.remove(mixed_data.hit_keys[idx]);
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .write_heavy => {
+                        // 70% insert, 20% lookup, 10% delete
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => { // insert
+                                    if (is_set) try map.add(mixed_data.miss_keys[idx]) else try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx])));
+                                },
+                                1 => { // lookup
+                                    if (is_set) {
+                                        if (map.contains(mixed_data.hit_keys[idx])) found += 1;
+                                    } else {
+                                        if (map.get(mixed_data.hit_keys[idx]) != null) found += 1;
+                                    }
+                                },
+                                else => { // delete
+                                    _ = map.remove(mixed_data.hit_keys[idx]);
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .update_heavy => {
+                        // 80% update, 15% lookup, 5% insert
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => { // update existing
+                                    if (is_set) try map.add(mixed_data.hit_keys[idx]) else try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx]) +% 1));
+                                },
+                                1 => { // lookup
+                                    if (is_set) {
+                                        if (map.contains(mixed_data.hit_keys[idx])) found += 1;
+                                    } else {
+                                        if (map.get(mixed_data.hit_keys[idx]) != null) found += 1;
+                                    }
+                                },
+                                else => { // insert new
+                                    if (is_set) try map.add(mixed_data.miss_keys[idx]) else try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx])));
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .zipfian => {
+                        // Same ops as mixed but with skewed key access (80% hit 20% of keys)
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => {
+                                    if (is_set) {
+                                        if (map.contains(mixed_data.hit_keys[idx])) found += 1;
+                                    } else {
+                                        if (map.get(mixed_data.hit_keys[idx]) != null) found += 1;
+                                    }
+                                },
+                                1 => {
+                                    if (is_set) {
+                                        if (!map.contains(mixed_data.miss_keys[idx])) found += 1;
+                                    } else {
+                                        if (map.get(mixed_data.miss_keys[idx]) == null) found += 1;
+                                    }
+                                },
+                                2 => {
+                                    if (is_set) try map.add(mixed_data.hit_keys[idx]) else try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx])));
+                                },
+                                3 => {
+                                    _ = map.remove(mixed_data.hit_keys[idx]);
+                                    if (is_set) try map.add(mixed_data.hit_keys[idx]) else try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx])));
+                                },
+                                else => {
+                                    var it = map.iterator();
+                                    var steps: usize = 0;
+                                    while (it.next()) |_| {
+                                        found += 1;
+                                        steps += 1;
+                                        if (steps >= 10) break;
+                                    }
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
                 }
                 times[iter_idx] = timer.read();
             }
@@ -473,6 +588,77 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
                         };
                         std.mem.doNotOptimizeAway(found);
                     },
+                    .read_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => if (map.get(mixed_data.hit_keys[idx]) != null) {
+                                    found += 1;
+                                },
+                                1 => try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                                else => _ = map.remove(mixed_data.hit_keys[idx]),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .write_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                                1 => if (map.get(mixed_data.hit_keys[idx]) != null) {
+                                    found += 1;
+                                },
+                                else => _ = map.remove(mixed_data.hit_keys[idx]),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .update_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx]) +% 1)),
+                                1 => if (map.get(mixed_data.hit_keys[idx]) != null) {
+                                    found += 1;
+                                },
+                                else => try map.put(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .zipfian => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => if (map.get(mixed_data.hit_keys[idx]) != null) {
+                                    found += 1;
+                                },
+                                1 => if (map.get(mixed_data.miss_keys[idx]) == null) {
+                                    found += 1;
+                                },
+                                2 => try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx]))),
+                                3 => {
+                                    _ = map.remove(mixed_data.hit_keys[idx]);
+                                    try map.put(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx])));
+                                },
+                                else => {
+                                    var it = map.iterator();
+                                    var steps: usize = 0;
+                                    while (it.next()) |_| {
+                                        found += 1;
+                                        steps += 1;
+                                        if (steps >= 10) break;
+                                    }
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
                 }
                 times[iter_idx] = timer.read();
             }
@@ -590,6 +776,73 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
                         };
                         std.mem.doNotOptimizeAway(found);
                     },
+                    .read_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => if (map.get(mixed_data.hit_keys[idx])) {
+                                    found += 1;
+                                },
+                                1 => _ = map.insert(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                                else => _ = map.erase(mixed_data.hit_keys[idx]),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .write_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => _ = map.insert(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                                1 => if (map.get(mixed_data.hit_keys[idx])) {
+                                    found += 1;
+                                },
+                                else => _ = map.erase(mixed_data.hit_keys[idx]),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .update_heavy => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => _ = map.insert(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx]) +% 1)),
+                                1 => if (map.get(mixed_data.hit_keys[idx])) {
+                                    found += 1;
+                                },
+                                else => _ = map.insert(mixed_data.miss_keys[idx], makeValue(V, keyToU64(mixed_data.miss_keys[idx]))),
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
+                    .zipfian => {
+                        const mixed_data: *const MixedOpsData(K) = @ptrCast(@alignCast(extra));
+                        var found: u64 = 0;
+                        for (mixed_data.ops[0..size], mixed_data.indices[0..size]) |op, idx| {
+                            switch (op) {
+                                0 => if (map.get(mixed_data.hit_keys[idx])) {
+                                    found += 1;
+                                },
+                                1 => if (!map.get(mixed_data.miss_keys[idx])) {
+                                    found += 1;
+                                },
+                                2 => _ = map.insert(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx]))),
+                                3 => {
+                                    _ = map.erase(mixed_data.hit_keys[idx]);
+                                    _ = map.insert(mixed_data.hit_keys[idx], makeValue(V, keyToU64(mixed_data.hit_keys[idx])));
+                                },
+                                else => {
+                                    for (mixed_data.hit_keys[0..@min(10, mixed_data.hit_keys.len)]) |k| {
+                                        if (map.get(k)) found += 1;
+                                    }
+                                },
+                            }
+                        }
+                        std.mem.doNotOptimizeAway(found);
+                    },
                 }
                 times[iter_idx] = timer.read();
             }
@@ -650,8 +903,9 @@ fn printRow(name: []const u8, r: BenchResults) void {
 
 fn formatSize(size: usize) []const u8 {
     return switch (size) {
-        10 => "10",
+        100 => "100",
         1_000 => "1K",
+        3_000 => "3K",
         100_000 => "100K",
         1_000_000 => "1M",
         else => "?",
@@ -693,6 +947,70 @@ fn generateMixedOps(comptime size: usize, allocator: std.mem.Allocator) !struct 
     return .{ .ops = ops, .indices = indices };
 }
 
+// Read-heavy: 95% lookup, 3% insert, 2% delete (cache-like workload)
+fn generateReadHeavyOps(comptime size: usize, allocator: std.mem.Allocator) !struct { ops: []u8, indices: []usize } {
+    const ops = try allocator.alloc(u8, size);
+    const indices = try allocator.alloc(usize, size);
+
+    var rng = makeRng(33333);
+    for (0..size) |i| {
+        indices[i] = rng.random().int(usize) % size;
+        const op_roll = rng.random().int(u8) % 100;
+        // 0 = lookup hit, 1 = insert, 2 = delete
+        if (op_roll < 95) ops[i] = 0 else if (op_roll < 98) ops[i] = 1 else ops[i] = 2;
+    }
+    return .{ .ops = ops, .indices = indices };
+}
+
+// Write-heavy: 70% insert, 20% lookup, 10% delete (streaming workload)
+fn generateWriteHeavyOps(comptime size: usize, allocator: std.mem.Allocator) !struct { ops: []u8, indices: []usize } {
+    const ops = try allocator.alloc(u8, size);
+    const indices = try allocator.alloc(usize, size);
+
+    var rng = makeRng(44444);
+    for (0..size) |i| {
+        indices[i] = rng.random().int(usize) % size;
+        const op_roll = rng.random().int(u8) % 100;
+        // 0 = insert, 1 = lookup, 2 = delete
+        if (op_roll < 70) ops[i] = 0 else if (op_roll < 90) ops[i] = 1 else ops[i] = 2;
+    }
+    return .{ .ops = ops, .indices = indices };
+}
+
+// Update-heavy: 80% update, 15% lookup, 5% insert (counters/stats workload)
+fn generateUpdateHeavyOps(comptime size: usize, allocator: std.mem.Allocator) !struct { ops: []u8, indices: []usize } {
+    const ops = try allocator.alloc(u8, size);
+    const indices = try allocator.alloc(usize, size);
+
+    var rng = makeRng(55555);
+    for (0..size) |i| {
+        indices[i] = rng.random().int(usize) % size;
+        const op_roll = rng.random().int(u8) % 100;
+        // 0 = update existing, 1 = lookup, 2 = insert new
+        if (op_roll < 80) ops[i] = 0 else if (op_roll < 95) ops[i] = 1 else ops[i] = 2;
+    }
+    return .{ .ops = ops, .indices = indices };
+}
+
+// Zipfian distribution: generates indices where ~80% of accesses hit ~20% of keys
+fn generateZipfianIndices(comptime size: usize, allocator: std.mem.Allocator) ![]usize {
+    const indices = try allocator.alloc(usize, size);
+    var rng = makeRng(66666);
+
+    // Zipf with s=1.0 approximation using rejection sampling
+    const hot_set_size = size / 5; // Top 20% of keys
+
+    for (0..size) |i| {
+        // 80% chance to pick from hot set, 20% from cold set
+        if (rng.random().int(u8) % 100 < 80) {
+            indices[i] = rng.random().int(usize) % hot_set_size;
+        } else {
+            indices[i] = hot_set_size + (rng.random().int(usize) % (size - hot_set_size));
+        }
+    }
+    return indices;
+}
+
 // ============================================================================
 // Benchmark Runner
 // ============================================================================
@@ -712,6 +1030,27 @@ fn runComparison(
     defer allocator.free(mixed_gen.ops);
     defer allocator.free(mixed_gen.indices);
     const mixed_data = MixedOpsData(K){ .ops = mixed_gen.ops, .indices = mixed_gen.indices, .hit_keys = keys, .miss_keys = miss_keys };
+
+    // Generate data for new workloads
+    const read_heavy_gen = try generateReadHeavyOps(size, allocator);
+    defer allocator.free(read_heavy_gen.ops);
+    defer allocator.free(read_heavy_gen.indices);
+    const read_heavy_data = MixedOpsData(K){ .ops = read_heavy_gen.ops, .indices = read_heavy_gen.indices, .hit_keys = keys, .miss_keys = miss_keys };
+
+    const write_heavy_gen = try generateWriteHeavyOps(size, allocator);
+    defer allocator.free(write_heavy_gen.ops);
+    defer allocator.free(write_heavy_gen.indices);
+    const write_heavy_data = MixedOpsData(K){ .ops = write_heavy_gen.ops, .indices = write_heavy_gen.indices, .hit_keys = keys, .miss_keys = miss_keys };
+
+    const update_heavy_gen = try generateUpdateHeavyOps(size, allocator);
+    defer allocator.free(update_heavy_gen.ops);
+    defer allocator.free(update_heavy_gen.indices);
+    const update_heavy_data = MixedOpsData(K){ .ops = update_heavy_gen.ops, .indices = update_heavy_gen.indices, .hit_keys = keys, .miss_keys = miss_keys };
+
+    // Zipfian: use same ops as mixed but with skewed indices
+    const zipfian_indices = try generateZipfianIndices(size, allocator);
+    defer allocator.free(zipfian_indices);
+    const zipfian_data = MixedOpsData(K){ .ops = mixed_gen.ops, .indices = zipfian_indices, .hit_keys = keys, .miss_keys = miss_keys };
 
     std.debug.print("\n  {s} elements:\n", .{comptime formatSize(size)});
     std.debug.print("  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐\n", .{});
@@ -763,6 +1102,10 @@ fn runComparison(
     try runOp(.iter, "Iteration", keys, {}, allocator, size);
     try runOp(.churn, "Churn", keys, {}, allocator, size);
     try runOp(.mixed, "Mixed", keys, &mixed_data, allocator, size);
+    try runOp(.read_heavy, "Read-Heavy", keys, &read_heavy_data, allocator, size);
+    try runOp(.write_heavy, "Write-Heavy", keys, &write_heavy_data, allocator, size);
+    try runOp(.update_heavy, "Update-Heavy", keys, &update_heavy_data, allocator, size);
+    try runOp(.zipfian, "Zipfian", keys, &zipfian_data, allocator, size);
 
     std.debug.print("  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘\n", .{});
 }
@@ -772,8 +1115,8 @@ fn runAllSizes(comptime K: type, comptime V: type, keys: []const K, miss_keys: [
     std.debug.print("  {s} key → {s} value\n", .{ keyTypeName(K), valueTypeName(V) });
     std.debug.print("════════════════════════════════════════════════════════════════════════════════\n", .{});
 
-    try runComparison(K, V, SIZE_10, keys, miss_keys, lookup_order, allocator);
-    try runComparison(K, V, SIZE_1K, keys, miss_keys, lookup_order, allocator);
+    try runComparison(K, V, SIZE_100, keys, miss_keys, lookup_order, allocator);
+    try runComparison(K, V, SIZE_3K, keys, miss_keys, lookup_order, allocator);
     try runComparison(K, V, SIZE_100K, keys, miss_keys, lookup_order, allocator);
 }
 
@@ -1021,7 +1364,7 @@ fn runBenchmarks(allocator: std.mem.Allocator) !void {
     std.debug.print("================================================================================\n", .{});
     std.debug.print("  Key types:   u32, u64, string (random length 8-64 chars)                    \n", .{});
     std.debug.print("  Value types: void (set), 4B, 64B                                            \n", .{});
-    std.debug.print("  Sizes:       10, 1K, 100K                                                   \n", .{});
+    std.debug.print("  Sizes:       100, 3K, 100K                                                  \n", .{});
     std.debug.print("  Iterations:  {d} per measurement                                            \n", .{BENCHMARK_ITERATIONS});
     std.debug.print("================================================================================\n", .{});
 
@@ -1133,7 +1476,7 @@ pub fn main() !void {
     std.debug.print("Configuration:\n", .{});
     std.debug.print("  - Warmup iterations:    {d}\n", .{WARMUP_ITERATIONS});
     std.debug.print("  - Benchmark iterations: {d}\n", .{BENCHMARK_ITERATIONS});
-    std.debug.print("  - Test sizes:           10, 1K, 100K (timing), 1K-1M (memory)\n\n", .{});
+    std.debug.print("  - Test sizes:           100, 3K, 100K (timing), 1K-1M (memory)\n\n", .{});
 
     std.debug.print("Warming up...\n", .{});
     for (0..WARMUP_ITERATIONS) |_| {
