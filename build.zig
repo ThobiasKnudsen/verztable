@@ -149,12 +149,6 @@ pub fn build(b: *std.Build) void {
         .optimize = .ReleaseFast, // Always use ReleaseFast for benchmarks
     });
 
-    // Add C source file for Verstable wrapper
-    bench_mod.addCSourceFile(.{
-        .file = b.path("src/verstable_wrapper.c"),
-        .flags = &.{ "-std=c11", "-O3", "-DNDEBUG" },
-    });
-
     // C++ compilation flags
     const cpp_flags = &[_][]const u8{
         "-std=c++17",
@@ -249,8 +243,7 @@ pub fn build(b: *std.Build) void {
         });
     }
 
-    // Add include paths for verstable.h and verstable_wrapper.h
-    bench_mod.addIncludePath(b.path("Verstable"));
+    // Add include paths for C++ wrapper headers
     bench_mod.addIncludePath(b.path("src"));
 
     // Add include paths for C++ libraries
