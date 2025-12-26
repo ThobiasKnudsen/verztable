@@ -1,6 +1,6 @@
 # TheHashTable
 
-**TheZigHashTable is on avarage faster than Abseil, Boost, and Ankerl over all mixed workloads. Boost is considered to be the fastest hashtable and is slightly faster than ThisHashTable on large tables with integer keys but lags behind on smaller tables and string keys. So on average TheHashTable is faster**
+**TheZigHashTable is on avarage faster than Abseil, Boost, and Ankerl over all mixed workloads. Boost is considered to be the fastest hashtable and is slightly faster than ThisHashTable on large tables with integer keys but lags behind on smaller tables and string keys. So on average is TheZigHashTable faster**
 
 [![Zig](https://img.shields.io/badge/zig-0.15.2+-orange?logo=zig)](https://ziglang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
