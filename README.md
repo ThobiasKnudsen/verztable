@@ -6,6 +6,18 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/ThobiasKnudsen/TheZigHashTable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/TheZigHashTable/actions)
 
+Average over all combinations of keys values and table sizes for the mixed workloads:
+  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+  │ Operation      │ This     │ Abseil   │ Boost    │ Ankerl   │ std      │
+  ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+  │ Churn          │    26 ns │    36 ns │    30 ns │    37 ns │    34 ns │
+  │ Mixed          │    21 ns │    35 ns │    31 ns │    41 ns │    23 ns │
+  │ Read-Heavy     │    15 ns │    26 ns │    24 ns │    33 ns │    17 ns │
+  │ Write-Heavy    │    61 ns │    57 ns │    49 ns │    49 ns │    48 ns │
+  │ Update-Heavy   │    21 ns │    30 ns │    30 ns │    39 ns │    24 ns │
+  │ Zipfian        │    17 ns │    31 ns │    27 ns │    38 ns │    16 ns │
+  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
+
 Run `zig build benchmark` to reproduce the benchmarks. See [BENCHMARKS.md](BENCHMARKS.md) if you dont want to run the benchmarks locally
 
 ## Why TheHashTable?
