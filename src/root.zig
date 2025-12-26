@@ -34,7 +34,7 @@ const EMPTY: MetaType = 0x0000;
 /// Higher values → better collision filtering (fewer expensive key equality checks, especially good for string keys)
 /// Lower values → longer possible chains (fewer premature rehashes, better for large values or small tables)
 /// Recommended range: 4–10 (4 is original Verstable, 8–9 often sweet spot)
-pub const HASH_FRAG_SIZE_BITS: usize = 8; // Change this single value to tune!
+pub const HASH_FRAG_SIZE_BITS: usize = 4; // Change this single value to tune!
 
 /// Derived metadata masks (do not edit these directly)
 pub const HASH_FRAG_MASK: MetaType = @as(MetaType, ((@as(u32, 1) << HASH_FRAG_SIZE_BITS) - 1) << (META_BITS - HASH_FRAG_SIZE_BITS));
@@ -46,8 +46,8 @@ pub const DISPLACEMENT_MASK: MetaType = (@as(MetaType, 1) << (META_BITS - 1 - HA
 /// Minimum non-zero bucket count (must be power of two)
 const MIN_NONZERO_BUCKET_COUNT: usize = 16;
 
-/// Default maximum load factor (80%)
-const DEFAULT_MAX_LOAD: f32 = 0.80;
+/// Default maximum load factor (87.5% - matches Abseil/Swiss Tables)
+const DEFAULT_MAX_LOAD: f32 = 0.875;
 
 // ============================================================================
 // Hash Functions

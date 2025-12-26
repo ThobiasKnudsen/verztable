@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <functional>
 
 // Abseil flat_hash_map/set
 #include "absl/container/flat_hash_map.h"
@@ -21,7 +22,7 @@
 #include "cpp_hashtables_wrapper.h"
 
 // ============================================================================
-// Value Types (matching Zig's Value4, Value64, Value56)
+// Value Types (matching Zig's Value4, Value64)
 // ============================================================================
 
 struct Val4 {
@@ -32,61 +33,69 @@ struct Val64 {
     uint8_t data[64] = {};
 };
 
-struct Val56 {
-    uint8_t data[56] = {};
-};
-
 // ============================================================================
 // Type aliases to avoid comma issues in macros
 // ============================================================================
 
-// Abseil types
+// Abseil types - u32 key
+using AbslU32Set = absl::flat_hash_set<uint32_t>;
+using AbslU32Val4Map = absl::flat_hash_map<uint32_t, Val4>;
+using AbslU32Val64Map = absl::flat_hash_map<uint32_t, Val64>;
+
+// Abseil types - u64 key
 using AbslU64Set = absl::flat_hash_set<uint64_t>;
 using AbslU64Val4Map = absl::flat_hash_map<uint64_t, Val4>;
 using AbslU64Val64Map = absl::flat_hash_map<uint64_t, Val64>;
-using AbslU64Val56Map = absl::flat_hash_map<uint64_t, Val56>;
 
-using AbslU16Set = absl::flat_hash_set<uint16_t>;
-using AbslU16Val4Map = absl::flat_hash_map<uint16_t, Val4>;
-using AbslU16Val64Map = absl::flat_hash_map<uint16_t, Val64>;
-using AbslU16Val56Map = absl::flat_hash_map<uint16_t, Val56>;
+// Transparent string hash for heterogeneous lookup (works with string_view)
+struct TransparentStringHash {
+    using is_transparent = void;
+    
+    size_t operator()(std::string_view sv) const noexcept {
+        return std::hash<std::string_view>{}(sv);
+    }
+    size_t operator()(const std::string& s) const noexcept {
+        return std::hash<std::string_view>{}(s);
+    }
+    size_t operator()(const char* s) const noexcept {
+        return std::hash<std::string_view>{}(s);
+    }
+};
 
-using AbslStrSet = absl::flat_hash_set<std::string>;
-using AbslStrVal4Map = absl::flat_hash_map<std::string, Val4>;
-using AbslStrVal64Map = absl::flat_hash_map<std::string, Val64>;
-using AbslStrVal56Map = absl::flat_hash_map<std::string, Val56>;
+// Abseil types - string key (with heterogeneous lookup)
+using AbslStrSet = absl::flat_hash_set<std::string, TransparentStringHash, std::equal_to<>>;
+using AbslStrVal4Map = absl::flat_hash_map<std::string, Val4, TransparentStringHash, std::equal_to<>>;
+using AbslStrVal64Map = absl::flat_hash_map<std::string, Val64, TransparentStringHash, std::equal_to<>>;
 
-// Boost types
+// Boost types - u32 key
+using BoostU32Set = boost::unordered_flat_set<uint32_t>;
+using BoostU32Val4Map = boost::unordered_flat_map<uint32_t, Val4>;
+using BoostU32Val64Map = boost::unordered_flat_map<uint32_t, Val64>;
+
+// Boost types - u64 key
 using BoostU64Set = boost::unordered_flat_set<uint64_t>;
 using BoostU64Val4Map = boost::unordered_flat_map<uint64_t, Val4>;
 using BoostU64Val64Map = boost::unordered_flat_map<uint64_t, Val64>;
-using BoostU64Val56Map = boost::unordered_flat_map<uint64_t, Val56>;
 
-using BoostU16Set = boost::unordered_flat_set<uint16_t>;
-using BoostU16Val4Map = boost::unordered_flat_map<uint16_t, Val4>;
-using BoostU16Val64Map = boost::unordered_flat_map<uint16_t, Val64>;
-using BoostU16Val56Map = boost::unordered_flat_map<uint16_t, Val56>;
+// Boost types - string key (with heterogeneous lookup using TransparentStringHash)
+using BoostStrSet = boost::unordered_flat_set<std::string, TransparentStringHash, std::equal_to<>>;
+using BoostStrVal4Map = boost::unordered_flat_map<std::string, Val4, TransparentStringHash, std::equal_to<>>;
+using BoostStrVal64Map = boost::unordered_flat_map<std::string, Val64, TransparentStringHash, std::equal_to<>>;
 
-using BoostStrSet = boost::unordered_flat_set<std::string>;
-using BoostStrVal4Map = boost::unordered_flat_map<std::string, Val4>;
-using BoostStrVal64Map = boost::unordered_flat_map<std::string, Val64>;
-using BoostStrVal56Map = boost::unordered_flat_map<std::string, Val56>;
+// Ankerl types - u32 key
+using AnkerlU32Set = ankerl::unordered_dense::set<uint32_t>;
+using AnkerlU32Val4Map = ankerl::unordered_dense::map<uint32_t, Val4>;
+using AnkerlU32Val64Map = ankerl::unordered_dense::map<uint32_t, Val64>;
 
-// Ankerl types
+// Ankerl types - u64 key
 using AnkerlU64Set = ankerl::unordered_dense::set<uint64_t>;
 using AnkerlU64Val4Map = ankerl::unordered_dense::map<uint64_t, Val4>;
 using AnkerlU64Val64Map = ankerl::unordered_dense::map<uint64_t, Val64>;
-using AnkerlU64Val56Map = ankerl::unordered_dense::map<uint64_t, Val56>;
 
-using AnkerlU16Set = ankerl::unordered_dense::set<uint16_t>;
-using AnkerlU16Val4Map = ankerl::unordered_dense::map<uint16_t, Val4>;
-using AnkerlU16Val64Map = ankerl::unordered_dense::map<uint16_t, Val64>;
-using AnkerlU16Val56Map = ankerl::unordered_dense::map<uint16_t, Val56>;
-
-using AnkerlStrSet = ankerl::unordered_dense::set<std::string>;
-using AnkerlStrVal4Map = ankerl::unordered_dense::map<std::string, Val4>;
-using AnkerlStrVal64Map = ankerl::unordered_dense::map<std::string, Val64>;
-using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
+// Ankerl types - string key (with heterogeneous lookup using TransparentStringHash)
+using AnkerlStrSet = ankerl::unordered_dense::set<std::string, TransparentStringHash, std::equal_to<>>;
+using AnkerlStrVal4Map = ankerl::unordered_dense::map<std::string, Val4, TransparentStringHash, std::equal_to<>>;
+using AnkerlStrVal64Map = ankerl::unordered_dense::map<std::string, Val64, TransparentStringHash, std::equal_to<>>;
 
 // ============================================================================
 // X-Macro Definitions for Wrapper Functions
@@ -121,6 +130,10 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
         size_t count = 0; \
         for (auto it = m->begin(); it != m->end(); ++it) count++; \
         return count; \
+    } \
+    extern "C" size_t prefix##_memory(cpp_map_handle h) { \
+        auto* m = static_cast<SetType*>(h); \
+        return m->bucket_count() * sizeof(typename SetType::value_type) + sizeof(SetType); \
     }
 
 // Integer key - map value
@@ -156,9 +169,14 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
         size_t count = 0; \
         for (auto it = m->begin(); it != m->end(); ++it) count++; \
         return count; \
+    } \
+    extern "C" size_t prefix##_memory(cpp_map_handle h) { \
+        auto* m = static_cast<MapType*>(h); \
+        return m->bucket_count() * sizeof(typename MapType::value_type) + sizeof(MapType); \
     }
 
 // String key - void value (set)
+// Uses std::string_view for lookups (heterogeneous lookup) to avoid allocations
 #define DEFINE_STR_SET_WRAPPERS(prefix, SetType) \
     extern "C" cpp_map_handle prefix##_init(void) { \
         return new SetType(); \
@@ -173,11 +191,11 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
     } \
     extern "C" int prefix##_get(cpp_map_handle h, const char* key, size_t len) { \
         auto* m = static_cast<SetType*>(h); \
-        return m->find(std::string(key, len)) != m->end() ? 1 : 0; \
+        return m->find(std::string_view(key, len)) != m->end() ? 1 : 0; \
     } \
     extern "C" int prefix##_erase(cpp_map_handle h, const char* key, size_t len) { \
         auto* m = static_cast<SetType*>(h); \
-        auto it = m->find(std::string(key, len)); \
+        auto it = m->find(std::string_view(key, len)); \
         if (it == m->end()) return 0; \
         m->erase(it); \
         return 1; \
@@ -190,9 +208,16 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
         size_t count = 0; \
         for (auto it = m->begin(); it != m->end(); ++it) count++; \
         return count; \
+    } \
+    extern "C" size_t prefix##_memory(cpp_map_handle h) { \
+        auto* m = static_cast<SetType*>(h); \
+        size_t mem = m->bucket_count() * sizeof(typename SetType::value_type) + sizeof(SetType); \
+        for (const auto& s : *m) mem += s.capacity(); \
+        return mem; \
     }
 
 // String key - map value
+// Uses std::string_view for lookups (heterogeneous lookup) to avoid allocations
 #define DEFINE_STR_MAP_WRAPPERS(prefix, MapType, val_type, val_size) \
     extern "C" cpp_map_handle prefix##_init(void) { \
         return new MapType(); \
@@ -209,13 +234,13 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
     } \
     extern "C" const uint8_t* prefix##_get(cpp_map_handle h, const char* key, size_t len) { \
         auto* m = static_cast<MapType*>(h); \
-        auto it = m->find(std::string(key, len)); \
+        auto it = m->find(std::string_view(key, len)); \
         if (it == m->end()) return nullptr; \
         return it->second.data; \
     } \
     extern "C" int prefix##_erase(cpp_map_handle h, const char* key, size_t len) { \
         auto* m = static_cast<MapType*>(h); \
-        auto it = m->find(std::string(key, len)); \
+        auto it = m->find(std::string_view(key, len)); \
         if (it == m->end()) return 0; \
         m->erase(it); \
         return 1; \
@@ -228,70 +253,67 @@ using AnkerlStrVal56Map = ankerl::unordered_dense::map<std::string, Val56>;
         size_t count = 0; \
         for (auto it = m->begin(); it != m->end(); ++it) count++; \
         return count; \
+    } \
+    extern "C" size_t prefix##_memory(cpp_map_handle h) { \
+        auto* m = static_cast<MapType*>(h); \
+        size_t mem = m->bucket_count() * sizeof(typename MapType::value_type) + sizeof(MapType); \
+        for (const auto& [k, v] : *m) mem += k.capacity(); \
+        return mem; \
     }
 
 // ============================================================================
 // Abseil Implementations
 // ============================================================================
 
+// u32 key
+DEFINE_INT_SET_WRAPPERS(absl_u32_void, AbslU32Set, uint32_t)
+DEFINE_INT_MAP_WRAPPERS(absl_u32_val4, AbslU32Val4Map, uint32_t, Val4, 4)
+DEFINE_INT_MAP_WRAPPERS(absl_u32_val64, AbslU32Val64Map, uint32_t, Val64, 64)
+
 // u64 key
 DEFINE_INT_SET_WRAPPERS(absl_u64_void, AbslU64Set, uint64_t)
 DEFINE_INT_MAP_WRAPPERS(absl_u64_val4, AbslU64Val4Map, uint64_t, Val4, 4)
 DEFINE_INT_MAP_WRAPPERS(absl_u64_val64, AbslU64Val64Map, uint64_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(absl_u64_val56, AbslU64Val56Map, uint64_t, Val56, 56)
-
-// u16 key
-DEFINE_INT_SET_WRAPPERS(absl_u16_void, AbslU16Set, uint16_t)
-DEFINE_INT_MAP_WRAPPERS(absl_u16_val4, AbslU16Val4Map, uint16_t, Val4, 4)
-DEFINE_INT_MAP_WRAPPERS(absl_u16_val64, AbslU16Val64Map, uint16_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(absl_u16_val56, AbslU16Val56Map, uint16_t, Val56, 56)
 
 // string key
 DEFINE_STR_SET_WRAPPERS(absl_str_void, AbslStrSet)
 DEFINE_STR_MAP_WRAPPERS(absl_str_val4, AbslStrVal4Map, Val4, 4)
 DEFINE_STR_MAP_WRAPPERS(absl_str_val64, AbslStrVal64Map, Val64, 64)
-DEFINE_STR_MAP_WRAPPERS(absl_str_val56, AbslStrVal56Map, Val56, 56)
 
 // ============================================================================
 // Boost Implementations
 // ============================================================================
 
+// u32 key
+DEFINE_INT_SET_WRAPPERS(boost_u32_void, BoostU32Set, uint32_t)
+DEFINE_INT_MAP_WRAPPERS(boost_u32_val4, BoostU32Val4Map, uint32_t, Val4, 4)
+DEFINE_INT_MAP_WRAPPERS(boost_u32_val64, BoostU32Val64Map, uint32_t, Val64, 64)
+
 // u64 key
 DEFINE_INT_SET_WRAPPERS(boost_u64_void, BoostU64Set, uint64_t)
 DEFINE_INT_MAP_WRAPPERS(boost_u64_val4, BoostU64Val4Map, uint64_t, Val4, 4)
 DEFINE_INT_MAP_WRAPPERS(boost_u64_val64, BoostU64Val64Map, uint64_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(boost_u64_val56, BoostU64Val56Map, uint64_t, Val56, 56)
-
-// u16 key
-DEFINE_INT_SET_WRAPPERS(boost_u16_void, BoostU16Set, uint16_t)
-DEFINE_INT_MAP_WRAPPERS(boost_u16_val4, BoostU16Val4Map, uint16_t, Val4, 4)
-DEFINE_INT_MAP_WRAPPERS(boost_u16_val64, BoostU16Val64Map, uint16_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(boost_u16_val56, BoostU16Val56Map, uint16_t, Val56, 56)
 
 // string key
 DEFINE_STR_SET_WRAPPERS(boost_str_void, BoostStrSet)
 DEFINE_STR_MAP_WRAPPERS(boost_str_val4, BoostStrVal4Map, Val4, 4)
 DEFINE_STR_MAP_WRAPPERS(boost_str_val64, BoostStrVal64Map, Val64, 64)
-DEFINE_STR_MAP_WRAPPERS(boost_str_val56, BoostStrVal56Map, Val56, 56)
 
 // ============================================================================
 // Ankerl Implementations
 // ============================================================================
 
+// u32 key
+DEFINE_INT_SET_WRAPPERS(ankerl_u32_void, AnkerlU32Set, uint32_t)
+DEFINE_INT_MAP_WRAPPERS(ankerl_u32_val4, AnkerlU32Val4Map, uint32_t, Val4, 4)
+DEFINE_INT_MAP_WRAPPERS(ankerl_u32_val64, AnkerlU32Val64Map, uint32_t, Val64, 64)
+
 // u64 key
 DEFINE_INT_SET_WRAPPERS(ankerl_u64_void, AnkerlU64Set, uint64_t)
 DEFINE_INT_MAP_WRAPPERS(ankerl_u64_val4, AnkerlU64Val4Map, uint64_t, Val4, 4)
 DEFINE_INT_MAP_WRAPPERS(ankerl_u64_val64, AnkerlU64Val64Map, uint64_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(ankerl_u64_val56, AnkerlU64Val56Map, uint64_t, Val56, 56)
-
-// u16 key
-DEFINE_INT_SET_WRAPPERS(ankerl_u16_void, AnkerlU16Set, uint16_t)
-DEFINE_INT_MAP_WRAPPERS(ankerl_u16_val4, AnkerlU16Val4Map, uint16_t, Val4, 4)
-DEFINE_INT_MAP_WRAPPERS(ankerl_u16_val64, AnkerlU16Val64Map, uint16_t, Val64, 64)
-DEFINE_INT_MAP_WRAPPERS(ankerl_u16_val56, AnkerlU16Val56Map, uint16_t, Val56, 56)
 
 // string key
 DEFINE_STR_SET_WRAPPERS(ankerl_str_void, AnkerlStrSet)
 DEFINE_STR_MAP_WRAPPERS(ankerl_str_val4, AnkerlStrVal4Map, Val4, 4)
 DEFINE_STR_MAP_WRAPPERS(ankerl_str_val64, AnkerlStrVal64Map, Val64, 64)
-DEFINE_STR_MAP_WRAPPERS(ankerl_str_val56, AnkerlStrVal56Map, Val56, 56)
