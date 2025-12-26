@@ -1,6 +1,5 @@
 # TheHashTable
-## On avarage faster than Abseil, Ankerl and Boost's fastest hash tables in the benchmark. NOTE: the C++ hash tables uses FFI to interface with zig, which is a slightly degrades performance.
-A high-performance hash table for Zig, inspired by [Verstable](https://github.com/JacksonAllan/Verstable).
+A high-performance hash table for Zig, inspired by [Verstable](https://github.com/JacksonAllan/Verstable). It is over all faster than zigs std hash table and Abseil, Ankerl and Boost's fastest hash tables. See BENCHMARKS.md. NOTE: the benchmarking uses FFI to interface with the C++ hash tables, which degrades performance to some degree.
 
 ## Features
 
