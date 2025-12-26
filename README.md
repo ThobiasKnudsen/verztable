@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/ThobiasKnudsen/TheZigHashTable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/TheZigHashTable/actions)
 
-Run `zig build benchmark` to reproduce the benchmarks. See [BENCHMARKS.md](BENCHMARKS.md) for complete tables.
+Run `zig build benchmark` to reproduce the benchmarks. See [BENCHMARKS.md](BENCHMARKS.md) if you dont want to run the benchmarks locally
 
 ## Why TheHashTable?
 
