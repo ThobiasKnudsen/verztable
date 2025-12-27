@@ -8,29 +8,29 @@
 
 string keys — Average across all value-sizes and table-sizes (9 configurations) for all mixed workloads:
 ```
-  ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬─────────────────────┐
-  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.StringHashTable │
-  ├────────────────┼──────────────┼──────────┼──────────┼──────────┼─────────────────────┤
-  │ Churn          │        43 ns │    55 ns │    50 ns │    60 ns │               50 ns │
-  │ Mixed          │        39 ns │    75 ns │    71 ns │    85 ns │               39 ns │
-  │ Read-Heavy     │        34 ns │    62 ns │    58 ns │    73 ns │               30 ns │
-  │ Write-Heavy    │       113 ns │   123 ns │    93 ns │    93 ns │               91 ns │
-  │ Update-Heavy   │        40 ns │    70 ns │    65 ns │    83 ns │               41 ns │
-  │ Zipfian        │        33 ns │    63 ns │    60 ns │    72 ns │               29 ns │
-  └────────────────┴──────────────┴──────────┴──────────┴──────────┴─────────────────────┘ 
+  ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬───────────────────┐
+  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.StringHashMap │
+  ├────────────────┼──────────────┼──────────┼──────────┼──────────┼───────────────────┤
+  │ Churn          │        43 ns │    55 ns │    50 ns │    60 ns │             50 ns │
+  │ Mixed          │        39 ns │    75 ns │    71 ns │    85 ns │             39 ns │
+  │ Read-Heavy     │        34 ns │    62 ns │    58 ns │    73 ns │             30 ns │
+  │ Write-Heavy    │       113 ns │   123 ns │    93 ns │    93 ns │             91 ns │
+  │ Update-Heavy   │        40 ns │    70 ns │    65 ns │    83 ns │             41 ns │
+  │ Zipfian        │        33 ns │    63 ns │    60 ns │    72 ns │             29 ns │
+  └────────────────┴──────────────┴──────────┴──────────┴──────────┴───────────────────┘ 
 ```
 u64 keys — Average across all value-sizes and table-sizes (9 configurations) for all mixed workloads:
 ```
-  ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬───────────────┐
-  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.HashTable │
-  ├────────────────┼──────────────┼──────────┼──────────┼──────────┼───────────────┤
-  │ Churn          │        17 ns │    25 ns │    20 ns │    23 ns │         29 ns │
-  │ Mixed          │        12 ns │    13 ns │    10 ns │    17 ns │         15 ns │
-  │ Read-Heavy     │         7 ns │     5 ns │     6 ns │    12 ns │         10 ns │
-  │ Write-Heavy    │        35 ns │    30 ns │    29 ns │    29 ns │         28 ns │
-  │ Update-Heavy   │        14 ns │    12 ns │    12 ns │    18 ns │         16 ns │
-  │ Zipfian        │         9 ns │    12 ns │     9 ns │    16 ns │         11 ns │
-  └────────────────┴──────────────┴──────────┴──────────┴──────────┴───────────────┘ 
+  ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬─────────────┐
+  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.HashMap │
+  ├────────────────┼──────────────┼──────────┼──────────┼──────────┼─────────────┤
+  │ Churn          │        17 ns │    25 ns │    20 ns │    23 ns │       29 ns │
+  │ Mixed          │        12 ns │    13 ns │    10 ns │    17 ns │       15 ns │
+  │ Read-Heavy     │         7 ns │     5 ns │     6 ns │    12 ns │       10 ns │
+  │ Write-Heavy    │        35 ns │    30 ns │    29 ns │    29 ns │       28 ns │
+  │ Update-Heavy   │        14 ns │    12 ns │    12 ns │    18 ns │       16 ns │
+  │ Zipfian        │         9 ns │    12 ns │     9 ns │    16 ns │       11 ns │
+  └────────────────┴──────────────┴──────────┴──────────┴──────────┴─────────────┘ 
 ```
 run `zig build benchmark` to reproduce a comprehensive benchmark og see [BENCHMARKS.md](BENCHMARKS.md).
 
