@@ -6,18 +6,31 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/ThobiasKnudsen/TheZigHashTable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/TheZigHashTable/actions)
 
-Average over all combinations of keys values and table sizes for the mixed workloads:
+string keys — Average across all value types and sizes (9 configurations) for all mixed workloads:
 ```
-  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐  
-  │ Operation      │ This     │ Abseil   │ Boost    │ Ankerl   │ std      │  
-  ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤  
-  │ Churn          │    26 ns │    36 ns │    30 ns │    37 ns │    34 ns │  
-  │ Mixed          │    21 ns │    35 ns │    31 ns │    41 ns │    23 ns │  
-  │ Read-Heavy     │    15 ns │    26 ns │    24 ns │    33 ns │    17 ns │  
-  │ Write-Heavy    │    61 ns │    57 ns │    49 ns │    49 ns │    48 ns │  
-  │ Update-Heavy   │    21 ns │    30 ns │    30 ns │    39 ns │    24 ns │  
-  │ Zipfian        │    17 ns │    31 ns │    27 ns │    38 ns │    16 ns │  
-  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘  
+  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+  │ Operation      │ This     │ Abseil   │ Boost    │ Ankerl   │ std      │
+  ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+  │ Churn          │    43 ns │    55 ns │    50 ns │    60 ns │    50 ns │
+  │ Mixed          │    39 ns │    75 ns │    71 ns │    85 ns │    39 ns │
+  │ Read-Heavy     │    34 ns │    62 ns │    58 ns │    73 ns │    30 ns │
+  │ Write-Heavy    │   113 ns │   123 ns │    93 ns │    93 ns │    91 ns │
+  │ Update-Heavy   │    40 ns │    70 ns │    65 ns │    83 ns │    41 ns │
+  │ Zipfian        │    33 ns │    63 ns │    60 ns │    72 ns │    29 ns │
+  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘ 
+```
+u64 keys — Average across all value types and sizes (9 configurations) for all mixed workloads:
+```
+  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+  │ Operation      │ This     │ Abseil   │ Boost    │ Ankerl   │ std      │
+  ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+  │ Churn          │    17 ns │    25 ns │    20 ns │    23 ns │    29 ns │
+  │ Mixed          │    12 ns │    13 ns │    10 ns │    17 ns │    15 ns │
+  │ Read-Heavy     │     7 ns │     5 ns │     6 ns │    12 ns │    10 ns │
+  │ Write-Heavy    │    35 ns │    30 ns │    29 ns │    29 ns │    28 ns │
+  │ Update-Heavy   │    14 ns │    12 ns │    12 ns │    18 ns │    16 ns │
+  │ Zipfian        │     9 ns │    12 ns │     9 ns │    16 ns │    11 ns │
+  └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘ 
 ```
 n `zig build benchmark` to reproduce the benchmarks. See [BENCHMARKS.md](BENCHMARKS.md) if you dont want to run the benchmarks locally
 

@@ -888,10 +888,8 @@ const BenchResults = struct {
 };
 
 // ============================================================================
-// Accumulator for Overall Summary
+// Accumulator for Key-Type Averages
 // ============================================================================
-
-const NUM_OPS = 16; // Number of benchmark operations
 
 const OpAccumulator = struct {
     ours_sum: u64 = 0,
@@ -927,8 +925,7 @@ const OpAccumulator = struct {
     }
 };
 
-const GlobalAccumulator = struct {
-    // Per-operation accumulators
+const KeyTypeAccumulator = struct {
     insert: OpAccumulator = .{},
     insert_seq: OpAccumulator = .{},
     insert_reserved: OpAccumulator = .{},
@@ -946,13 +943,30 @@ const GlobalAccumulator = struct {
     update_heavy: OpAccumulator = .{},
     zipfian: OpAccumulator = .{},
 
-    fn printSummary(self: *GlobalAccumulator) void {
-        std.debug.print("\n╔══════════════════════════════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║                    OVERALL AVERAGE (All Key/Value/Size Combinations)         ║\n", .{});
-        std.debug.print("╚══════════════════════════════════════════════════════════════════════════════╝\n", .{});
+    fn addResult(self: *KeyTypeAccumulator, op: BenchOp, results: BenchResults) void {
+        switch (op) {
+            .insert => self.insert.add(results),
+            .insert_seq => self.insert_seq.add(results),
+            .insert_reserved => self.insert_reserved.add(results),
+            .update => self.update.add(results),
+            .lookup => self.lookup.add(results),
+            .high_load => self.high_load.add(results),
+            .miss => self.miss.add(results),
+            .tombstone => self.tombstone.add(results),
+            .delete => self.delete.add(results),
+            .iter => self.iter.add(results),
+            .churn => self.churn.add(results),
+            .mixed => self.mixed.add(results),
+            .read_heavy => self.read_heavy.add(results),
+            .write_heavy => self.write_heavy.add(results),
+            .update_heavy => self.update_heavy.add(results),
+            .zipfian => self.zipfian.add(results),
+        }
+    }
 
+    fn printTable(self: *KeyTypeAccumulator, key_type_name: []const u8) void {
         std.debug.print("\n════════════════════════════════════════════════════════════════════════════════\n", .{});
-        std.debug.print("  Average of all {d} configurations (3 key types × 3 value types × 3 sizes)\n", .{self.insert.count});
+        std.debug.print("  {s} keys — Average across all value types and sizes ({d} configs)\n", .{ key_type_name, self.insert.count });
         std.debug.print("════════════════════════════════════════════════════════════════════════════════\n", .{});
 
         std.debug.print("\n  ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐\n", .{});
@@ -994,7 +1008,9 @@ fn printAvgRow(name: []const u8, acc: OpAccumulator) void {
     std.debug.print(" │\n", .{});
 }
 
-var g_accumulator: GlobalAccumulator = .{};
+var g_acc_u32: KeyTypeAccumulator = .{};
+var g_acc_u64: KeyTypeAccumulator = .{};
+var g_acc_string: KeyTypeAccumulator = .{};
 
 fn printRow(name: []const u8, r: BenchResults) void {
     std.debug.print("  │ {s:<14} │", .{name});
@@ -1199,25 +1215,9 @@ fn runComparison(
 
             printRow(name, results);
 
-            // Accumulate for summary
-            switch (op) {
-                .insert => g_accumulator.insert.add(results),
-                .insert_seq => g_accumulator.insert_seq.add(results),
-                .insert_reserved => g_accumulator.insert_reserved.add(results),
-                .update => g_accumulator.update.add(results),
-                .lookup => g_accumulator.lookup.add(results),
-                .high_load => g_accumulator.high_load.add(results),
-                .miss => g_accumulator.miss.add(results),
-                .tombstone => g_accumulator.tombstone.add(results),
-                .delete => g_accumulator.delete.add(results),
-                .iter => g_accumulator.iter.add(results),
-                .churn => g_accumulator.churn.add(results),
-                .mixed => g_accumulator.mixed.add(results),
-                .read_heavy => g_accumulator.read_heavy.add(results),
-                .write_heavy => g_accumulator.write_heavy.add(results),
-                .update_heavy => g_accumulator.update_heavy.add(results),
-                .zipfian => g_accumulator.zipfian.add(results),
-            }
+            // Accumulate for key-type summary
+            const acc = if (K == u32) &g_acc_u32 else if (K == u64) &g_acc_u64 else &g_acc_string;
+            acc.addResult(op, results);
         }
     }.run;
 
@@ -1618,8 +1618,14 @@ pub fn main() !void {
 
     try runBenchmarks(allocator);
 
-    // Print overall summary table
-    g_accumulator.printSummary();
+    // Print key-type average tables
+    std.debug.print("\n╔══════════════════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║                         AVERAGE BY KEY TYPE                                  ║\n", .{});
+    std.debug.print("╚══════════════════════════════════════════════════════════════════════════════╝\n", .{});
+
+    g_acc_u32.printTable("u32");
+    g_acc_u64.printTable("u64");
+    g_acc_string.printTable("string");
 
     try runMemoryBenchmarks(allocator);
     std.debug.print("\nBenchmark complete.\n", .{});
