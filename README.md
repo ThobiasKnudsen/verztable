@@ -4,7 +4,7 @@
 
 [![Zig](https://img.shields.io/badge/zig-0.15.2+-orange?logo=zig)](https://ziglang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![CI](https://github.com/ThobiasKnudsen/TheZigHashTable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/TheZigHashTable/actions)
+[![CI](https://github.com/ThobiasKnudsen/verztable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/verztable/actions)
 
 ### Key Features
 - 🏆 **Beats Swiss Tables** on string keys and mixed workloads
@@ -274,7 +274,10 @@ See [BENCHMARKS.md](BENCHMARKS.md) for detailed results across different key typ
 
 ### Benchmarking Notes
 
-- For string keys, the Zig hash tables have an advantage because C++ copies strings while Zig stores slices
+- All C++ hash tables use `std::string_view` (non-owning) for string keys, matching Zig's `[]const u8` semantics
+- All libraries use wyhash for string hashing to ensure a fair comparison
+- verztable has a fast-path for strings ≤8 bytes (packed into u64) that competitors don't use
+- verztable stores full 64-bit hashes for string keys to skip `memcmp` on hash-fragment matches
 - Benchmarks use FFI to interface with C++ hash tables, which can add some overhead (though Ankerl's 0ns iterations suggest minimal impact)
 - All benchmarks run with `ReleaseFast` optimization
 
