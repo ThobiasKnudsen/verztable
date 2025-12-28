@@ -3,7 +3,7 @@
 //
 // FAIR COMPARISON MODE:
 // - String keys use std::string_view (non-owning, like Zig's []const u8)
-// - All libraries use wyhash for string hashing (same as Zig's TheHashTable)
+// - All libraries use wyhash for string hashing (same as Zig's verztable)
 // - No heap allocations on insert/lookup for string keys
 
 #include <cstdint>
@@ -40,7 +40,7 @@ struct Val64 {
 
 // ============================================================================
 // Wyhash - borrowed from ankerl::unordered_dense for consistent hashing
-// This ensures all C++ libraries use the same fast hash as Zig's TheHashTable
+// This ensures all C++ libraries use the same fast hash as Zig's verztable
 // ============================================================================
 
 namespace wyhash {

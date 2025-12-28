@@ -1,22 +1,20 @@
-# Zig
-.zig-cache/
+# Build outputs
 zig-out/
 zig-cache/
+.zig-cache/
 
-# IDE
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
-Desktop.ini
-
-# Build artifacts
-*.o
-*.a
-*.so
-*.dylib

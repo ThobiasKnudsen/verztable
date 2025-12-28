@@ -1,11 +1,10 @@
-//! TheHashTable - A high-performance hash table ported from Verstable
+//! verztable - A high-performance hash table for Zig
 //!
-//! This is a Zig port of Verstable (https://github.com/JacksonAllan/Verstable),
-//! a versatile generic hash table that brings the speed and memory efficiency of
-//! state-of-the-art C++ hash tables to Zig.
+//! A Zig port of Verstable (https://github.com/JacksonAllan/Verstable),
+//! bringing the speed and memory efficiency of state-of-the-art C++ hash tables to Zig.
 //!
 //! ## Features
-//! - **Unified Map/Set**: `TheHashTable(K, V)` is a map; `TheHashTable(K, void)` is a set
+//! - **Unified Map/Set**: `HashMap(K, V)` is a map; `HashMap(K, void)` is a set
 //! - **Fast operations**: O(1) average for insert, lookup, and delete
 //! - **Tombstone-free deletion**: No performance degradation after many deletes
 //! - **Low memory overhead**: Only 2 bytes per bucket
@@ -234,7 +233,7 @@ inline fn firstNonZeroMetax8(metadata: [*]const MetaType) u32 {
 }
 
 // ============================================================================
-// TheHashTable
+// HashMap
 // ============================================================================
 
 /// A high-performance hash table that can function as either a map or a set.
@@ -244,7 +243,7 @@ inline fn firstNonZeroMetax8(metadata: [*]const MetaType) u32 {
 ///
 /// ## Example (Map)
 /// ```zig
-/// var map = TheHashTable(u32, []const u8).init(allocator);
+/// var map = HashMap(u32, []const u8).init(allocator);
 /// defer map.deinit();
 /// try map.put(42, "hello");
 /// if (map.get(42)) |val| std.debug.print("{s}\n", .{val});
@@ -252,17 +251,17 @@ inline fn firstNonZeroMetax8(metadata: [*]const MetaType) u32 {
 ///
 /// ## Example (Set)
 /// ```zig
-/// var set = TheHashTable(u32, void).init(allocator);
+/// var set = HashMap(u32, void).init(allocator);
 /// defer set.deinit();
 /// try set.add(42);
 /// if (set.contains(42)) std.debug.print("found!\n", .{});
 /// ```
-pub fn TheHashTable(comptime K: type, comptime V: type) type {
-    return TheHashTableWithFns(K, V, AutoHashFn(K).hash, AutoEqlFn(K).eql);
+pub fn HashMap(comptime K: type, comptime V: type) type {
+    return HashMapWithFns(K, V, AutoHashFn(K).hash, AutoEqlFn(K).eql);
 }
 
 /// Create a hash table with custom hash and equality functions.
-pub fn TheHashTableWithFns(
+pub fn HashMapWithFns(
     comptime K: type,
     comptime V: type,
     comptime hashFn: fn (K) u64,
@@ -1015,7 +1014,7 @@ pub fn TheHashTableWithFns(
 
 test "basic map operations" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, []const u8).init(allocator);
+    var map = HashMap(u32, []const u8).init(allocator);
     defer map.deinit();
 
     try map.put(1, "one");
@@ -1048,7 +1047,7 @@ test "basic map operations" {
 
 test "basic set operations" {
     const allocator = std.testing.allocator;
-    var set = TheHashTable(u32, void).init(allocator);
+    var set = HashMap(u32, void).init(allocator);
     defer set.deinit();
 
     try set.add(1);
@@ -1069,7 +1068,7 @@ test "basic set operations" {
 
 test "string keys" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable([]const u8, i32).init(allocator);
+    var map = HashMap([]const u8, i32).init(allocator);
     defer map.deinit();
 
     try map.put("hello", 1);
@@ -1084,7 +1083,7 @@ test "string keys" {
 
 test "many insertions and removals" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     // Insert many
@@ -1120,7 +1119,7 @@ test "many insertions and removals" {
 
 test "iterator" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.put(1, 10);
@@ -1137,7 +1136,7 @@ test "iterator" {
 
 test "clone" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.put(1, 10);
@@ -1156,7 +1155,7 @@ test "clone" {
 
 test "reserve and shrink" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.reserve(100);
@@ -1172,7 +1171,7 @@ test "reserve and shrink" {
 
 test "ensureTotalCapacity and ensureUnusedCapacity" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     // Pre-allocate for 1000 items
@@ -1193,7 +1192,7 @@ test "ensureTotalCapacity and ensureUnusedCapacity" {
 
 test "clear" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     for (0..100) |i| {
@@ -1212,7 +1211,7 @@ test "clear" {
 
 test "putNoClobber" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try std.testing.expect(try map.putNoClobber(1, 10));
@@ -1223,7 +1222,7 @@ test "putNoClobber" {
 test "enum keys" {
     const Color = enum { red, green, blue };
     const allocator = std.testing.allocator;
-    var map = TheHashTable(Color, []const u8).init(allocator);
+    var map = HashMap(Color, []const u8).init(allocator);
     defer map.deinit();
 
     try map.put(.red, "rouge");
@@ -1237,7 +1236,7 @@ test "enum keys" {
 
 test "getOrPut" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     // First insert
@@ -1257,7 +1256,7 @@ test "getOrPut" {
 
 test "getEntry" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, []const u8).init(allocator);
+    var map = HashMap(u32, []const u8).init(allocator);
     defer map.deinit();
 
     try map.put(42, "answer");
@@ -1271,7 +1270,7 @@ test "getEntry" {
 
 test "key iterator" {
     const allocator = std.testing.allocator;
-    var set = TheHashTable(u32, void).init(allocator);
+    var set = HashMap(u32, void).init(allocator);
     defer set.deinit();
 
     try set.add(10);
@@ -1288,7 +1287,7 @@ test "key iterator" {
 
 test "value iterator" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.put(1, 100);
@@ -1305,7 +1304,7 @@ test "value iterator" {
 
 test "empty table operations" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try std.testing.expectEqual(@as(usize, 0), map.count());
@@ -1319,7 +1318,7 @@ test "empty table operations" {
 
 test "set with many collisions" {
     const allocator = std.testing.allocator;
-    var set = TheHashTable(u32, void).init(allocator);
+    var set = HashMap(u32, void).init(allocator);
     defer set.deinit();
 
     // Insert values that might have hash collisions
@@ -1347,7 +1346,7 @@ test "set with many collisions" {
 
 test "max load factor adjustment" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     // Set low load factor
@@ -1363,7 +1362,7 @@ test "max load factor adjustment" {
 
 test "getPtr modification" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.put(1, 10);
@@ -1387,7 +1386,7 @@ test "custom hash function" {
     };
 
     const allocator = std.testing.allocator;
-    var map = TheHashTableWithFns(u32, u32, MyHashFn.hash, MyEqlFn.eql).init(allocator);
+    var map = HashMapWithFns(u32, u32, MyHashFn.hash, MyEqlFn.eql).init(allocator);
     defer map.deinit();
 
     try map.put(1, 10);
@@ -1399,7 +1398,7 @@ test "custom hash function" {
 
 test "stress test - many operations" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     // Insert 10000 items
@@ -1433,7 +1432,7 @@ test "stress test - many operations" {
 
 test "iterator reset" {
     const allocator = std.testing.allocator;
-    var map = TheHashTable(u32, u32).init(allocator);
+    var map = HashMap(u32, u32).init(allocator);
     defer map.deinit();
 
     try map.put(1, 10);

@@ -1,15 +1,27 @@
-# TheHashTable
+# ⚡ verztable
 
-**TheHashTable is on avarage faster than Abseil, Boost, and Ankerl over all mixed workloads. Boost is considered to be the fastest hashtable and is slightly faster than TheHashTable on large tables with integer keys but lags further behind on smaller tables and string keys. So on average is TheHashTable faster**
+**A high-performance hash table for Zig that outperforms Google's Abseil, Boost, and Ankerl on mixed workloads.**
 
 [![Zig](https://img.shields.io/badge/zig-0.15.2+-orange?logo=zig)](https://ziglang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/ThobiasKnudsen/TheZigHashTable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/TheZigHashTable/actions)
 
+### Key Features
+- 🏆 **Beats Swiss Tables** on string keys and mixed workloads
+- 🗑️ **Tombstone-free deletion** — performance doesn't degrade after millions of deletes
+- 🔬 **SIMD-accelerated iteration** — vectorized metadata scanning
+- 📦 **Unified API** — same type works as map and set
+- ⚡ **Hash fragment filtering** — skips 15/16 of key comparisons on collisions
+
+![Benchmark comparison showing verztable performance vs Abseil, Boost, and Ankerl](docs/images/string_keys_mixed.png)
+
+<details>
+<summary><strong>📊 Detailed Benchmark Tables</strong></summary>
+
 string keys — Average across all value-sizes and table-sizes (9 configurations) for all mixed workloads:
 ```
   ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬───────────────────┐
-  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.StringHashMap │
+  │ Operation      │ verztable    │ Abseil   │ Boost    │ Ankerl   │ std.StringHashMap │
   ├────────────────┼──────────────┼──────────┼──────────┼──────────┼───────────────────┤
   │ Churn          │        43 ns │    55 ns │    50 ns │    60 ns │             50 ns │
   │ Mixed          │        39 ns │    75 ns │    71 ns │    85 ns │             39 ns │
@@ -22,7 +34,7 @@ string keys — Average across all value-sizes and table-sizes (9 configurations
 u64 keys — Average across all value-sizes and table-sizes (9 configurations) for all mixed workloads:
 ```
   ┌────────────────┬──────────────┬──────────┬──────────┬──────────┬─────────────┐
-  │ Operation      │ TheHashTable │ Abseil   │ Boost    │ Ankerl   │ std.HashMap │
+  │ Operation      │ verztable    │ Abseil   │ Boost    │ Ankerl   │ std.HashMap │
   ├────────────────┼──────────────┼──────────┼──────────┼──────────┼─────────────┤
   │ Churn          │        17 ns │    25 ns │    20 ns │    23 ns │       29 ns │
   │ Mixed          │        12 ns │    13 ns │    10 ns │    17 ns │       15 ns │
@@ -32,13 +44,16 @@ u64 keys — Average across all value-sizes and table-sizes (9 configurations) f
   │ Zipfian        │         9 ns │    12 ns │     9 ns │    16 ns │       11 ns │
   └────────────────┴──────────────┴──────────┴──────────┴──────────┴─────────────┘ 
 ```
-run `zig build benchmark` to reproduce a comprehensive benchmark og see [BENCHMARKS.md](BENCHMARKS.md).
 
-## Why TheHashTable?
+</details>
+
+Run `zig build benchmark` to reproduce a comprehensive benchmark, or see [BENCHMARKS.md](BENCHMARKS.md).
+
+## Why verztable?
 
 - **Fast lookups impervious to load factor** — Hash fragment filtering skips non-matches without touching bucket data
 - **Tombstone-free deletion** — No performance degradation after millions of deletes  
-- **Unified API** — Same type works as both map (`TheHashTable(K, V)`) and set (`TheHashTable(K, void)`)
+- **Unified API** — Same type works as both map (`HashMap(K, V)`) and set (`HashMap(K, void)`)
 - **SIMD iteration** — Vectorized metadata scanning for fast traversal
 - **Zero-cost generics** — Comptime-specialized for each key/value type
 
@@ -50,8 +65,8 @@ Add to your `build.zig.zon`:
 
 ```zig
 .dependencies = .{
-    .TheHashTable = .{
-        .url = "https://github.com/ThobiasKnudsen/TheZigHashTable/archive/refs/tags/v0.1.0.tar.gz",
+    .verztable = .{
+        .url = "https://github.com/ThobiasKnudsen/verztable/archive/refs/tags/v0.1.0.tar.gz",
         .hash = "...", // Run: zig fetch --save <url>
     },
 },
@@ -60,8 +75,8 @@ Add to your `build.zig.zon`:
 Then in your `build.zig`:
 
 ```zig
-const hash_table = b.dependency("TheHashTable", .{});
-exe.root_module.addImport("TheHashTable", hash_table.module("TheHashTable"));
+const verztable = b.dependency("verztable", .{});
+exe.root_module.addImport("verztable", verztable.module("verztable"));
 ```
 
 ## Quick Start
@@ -70,9 +85,9 @@ exe.root_module.addImport("TheHashTable", hash_table.module("TheHashTable"));
 
 ```zig
 const std = @import("std");
-const TheHashTable = @import("TheHashTable").TheHashTable;
+const HashMap = @import("verztable").HashMap;
 
-var map = TheHashTable(u32, []const u8).init(allocator);
+var map = HashMap(u32, []const u8).init(allocator);
 defer map.deinit();
 
 // Insert
@@ -92,10 +107,10 @@ _ = map.remove(42);
 
 ### Set (V = void)
 
-When V is `void`, TheHashTable becomes a set with zero value storage overhead:
+When V is `void`, the HashMap becomes a set with zero value storage overhead:
 
 ```zig
-var set = TheHashTable([]const u8, void).init(allocator);
+var set = HashMap([]const u8, void).init(allocator);
 defer set.deinit();
 
 // Add elements
@@ -114,7 +129,7 @@ _ = set.remove("apple");
 ### Accumulation with getOrPut
 
 ```zig
-var freq = TheHashTable([]const u8, u32).init(allocator);
+var freq = HashMap([]const u8, u32).init(allocator);
 defer freq.deinit();
 
 for (words) |word| {
@@ -151,7 +166,7 @@ while (val_iter.next()) |val| {
 ### Configuration
 
 ```zig
-var map = TheHashTable(u32, u32).init(allocator);
+var map = HashMap(u32, u32).init(allocator);
 
 // Adjust load factor (default: 0.875)
 map.setMaxLoadFactor(0.75);
@@ -169,7 +184,7 @@ var map2 = try map.clone();
 ### Custom Hash Functions
 
 ```zig
-const TheHashTableWithFns = @import("TheHashTable").TheHashTableWithFns;
+const HashMapWithFns = @import("verztable").HashMapWithFns;
 
 const MyHash = struct {
     fn hash(key: MyKey) u64 { ... }
@@ -178,7 +193,7 @@ const MyEql = struct {
     fn eql(a: MyKey, b: MyKey) bool { ... }
 };
 
-var map = TheHashTableWithFns(MyKey, MyValue, MyHash.hash, MyEql.eql).init(allocator);
+var map = HashMapWithFns(MyKey, MyValue, MyHash.hash, MyEql.eql).init(allocator);
 ```
 
 ## Algorithm
@@ -199,7 +214,7 @@ var map = TheHashTableWithFns(MyKey, MyValue, MyHash.hash, MyEql.eql).init(alloc
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Open-addressing with quadratic probing and linked chains per home bucket:
+Open-addressing with linear probing and linked chains per home bucket:
 
 - **16-bit metadata per bucket**: 4-bit hash fragment | 1-bit home flag | 11-bit displacement
 - Keys belonging to the same bucket form traversable chains
@@ -209,8 +224,8 @@ Open-addressing with quadratic probing and linked chains per home bucket:
 ## API Reference
 
 ### Types
-- `TheHashTable(K, V)` — Hash table with auto-detected hash/eql functions
-- `TheHashTableWithFns(K, V, hashFn, eqlFn)` — Hash table with custom functions
+- `HashMap(K, V)` — Hash table with auto-detected hash/eql functions
+- `HashMapWithFns(K, V, hashFn, eqlFn)` — Hash table with custom functions
 
 ### Map Methods (V != void)
 
@@ -249,7 +264,7 @@ Open-addressing with quadratic probing and linked chains per home bucket:
 
 ## Benchmarks
 
-Run the benchmark suite comparing TheHashTable against Abseil, Boost, Ankerl, and Zig's std hash maps:
+Run the benchmark suite comparing verztable against Abseil, Boost, Ankerl, and Zig's std hash maps:
 
 ```bash
 zig build benchmark

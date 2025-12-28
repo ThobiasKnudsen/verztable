@@ -1,23 +1,23 @@
-//! TheHashTable Usage Examples
+//! verztable Usage Examples
 //!
-//! This file demonstrates the various ways to use TheHashTable,
+//! This file demonstrates the various ways to use verztable,
 //! a high-performance hash table ported from Verstable.
 
 const std = @import("std");
-const TheHashTable = @import("root.zig").TheHashTable;
-const TheHashTableWithFns = @import("root.zig").TheHashTableWithFns;
+const HashMap = @import("root.zig").HashMap;
+const HashMapWithFns = @import("root.zig").HashMapWithFns;
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    std.debug.print("\n=== TheHashTable Examples ===\n\n", .{});
+    std.debug.print("\n=== HashMap Examples ===\n\n", .{});
 
     // =========================================================================
     // Example 1: Basic Map (key -> value)
     // =========================================================================
     std.debug.print("1. Basic Map Usage:\n", .{});
     {
-        var map = TheHashTable(u32, []const u8).init(allocator);
+        var map = HashMap(u32, []const u8).init(allocator);
         defer map.deinit();
 
         // Insert key-value pairs
@@ -44,7 +44,7 @@ pub fn main() !void {
     // =========================================================================
     std.debug.print("\n2. Set Usage (V = void):\n", .{});
     {
-        var set = TheHashTable([]const u8, void).init(allocator);
+        var set = HashMap([]const u8, void).init(allocator);
         defer set.deinit();
 
         // Add elements
@@ -66,7 +66,7 @@ pub fn main() !void {
     // =========================================================================
     std.debug.print("\n3. Word Frequency Counter (getOrPut):\n", .{});
     {
-        var freq = TheHashTable([]const u8, u32).init(allocator);
+        var freq = HashMap([]const u8, u32).init(allocator);
         defer freq.deinit();
 
         const words = [_][]const u8{ "the", "quick", "brown", "fox", "the", "lazy", "dog", "the" };
@@ -88,7 +88,7 @@ pub fn main() !void {
     // =========================================================================
     std.debug.print("\n4. Iteration:\n", .{});
     {
-        var map = TheHashTable(u32, u32).init(allocator);
+        var map = HashMap(u32, u32).init(allocator);
         defer map.deinit();
 
         try map.put(10, 100);
@@ -125,7 +125,7 @@ pub fn main() !void {
     // =========================================================================
     std.debug.print("\n5. Configuration:\n", .{});
     {
-        var map = TheHashTable(u32, u32).init(allocator);
+        var map = HashMap(u32, u32).init(allocator);
         defer map.deinit();
 
         // Adjust load factor (higher = more memory efficient, lower = faster)
@@ -172,7 +172,7 @@ pub fn main() !void {
             }
         };
 
-        var map = TheHashTableWithFns(
+        var map = HashMapWithFns(
             []const u8,
             i32,
             CaseInsensitiveHash.hash,
@@ -190,7 +190,7 @@ pub fn main() !void {
     // =========================================================================
     std.debug.print("\n7. Clone:\n", .{});
     {
-        var map1 = TheHashTable(u32, u32).init(allocator);
+        var map1 = HashMap(u32, u32).init(allocator);
         defer map1.deinit();
 
         try map1.put(1, 100);

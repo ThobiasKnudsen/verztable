@@ -1,10 +1,10 @@
-//! TheHashTable Benchmark Suite
+//! verztable Benchmark Suite
 //!
 //! Comprehensive performance tests for comparing with other hash table implementations.
 //! Run with: zig build benchmark
 
 const std = @import("std");
-const TheHashTable = @import("root.zig").TheHashTable;
+const HashMap = @import("root.zig").HashMap;
 const Timer = std.time.Timer;
 
 const cpp = @cImport({
@@ -205,7 +205,7 @@ fn Benchmarks(comptime K: type, comptime V: type) type {
         }
 
         fn benchThis(comptime Op: BenchOp, comptime size: usize, keys: []const K, extra: anytype, alloc: std.mem.Allocator) ![BENCHMARK_ITERATIONS]u64 {
-            const Map = TheHashTable(K, V);
+            const Map = HashMap(K, V);
             var times: [BENCHMARK_ITERATIONS]u64 = undefined;
 
             for (0..BENCHMARK_ITERATIONS) |iter_idx| {
@@ -1296,7 +1296,7 @@ fn runMemoryBenchmark(comptime K: type, comptime V: type, comptime size: usize, 
     // This
     var ours_mem: usize = 0;
     {
-        const Map = TheHashTable(K, V);
+        const Map = HashMap(K, V);
         var map = Map.init(allocator);
         defer map.deinit();
         for (keys[0..size]) |k| {
@@ -1594,10 +1594,10 @@ pub fn main() !void {
     const allocator = std.heap.c_allocator;
 
     std.debug.print("\n================================================================================\n", .{});
-    std.debug.print("                      TheHashTable Benchmark Suite v2                          \n", .{});
+    std.debug.print("                      HashMap Benchmark Suite v2                          \n", .{});
     std.debug.print("                                                                                \n", .{});
     std.debug.print("  Comparing:                                                                    \n", .{});
-    std.debug.print("  - TheHashTable (Zig) — \"This\"                                                 \n", .{});
+    std.debug.print("  - HashMap (Zig) — \"This\"                                                 \n", .{});
     std.debug.print("  - Abseil (C++):  flat_hash_map                                                \n", .{});
     std.debug.print("  - Boost (C++):   unordered_flat_map                                           \n", .{});
     std.debug.print("  - Ankerl (C++):  unordered_dense                                              \n", .{});
@@ -1611,7 +1611,7 @@ pub fn main() !void {
 
     std.debug.print("Warming up...\n", .{});
     for (0..WARMUP_ITERATIONS) |_| {
-        var map = TheHashTable(u64, u64).init(allocator);
+        var map = HashMap(u64, u64).init(allocator);
         defer map.deinit();
         for (0..SIZE_100K) |i| try map.put(i, i);
     }
