@@ -1,4 +1,4 @@
-# ⚡ verztable
+# Verztable
 
 **A high-performance hash table for Zig that outperforms Google's Abseil, Boost, and Ankerl on mixed workloads.**
 
@@ -7,11 +7,11 @@
 [![CI](https://github.com/ThobiasKnudsen/verztable/actions/workflows/ci.yml/badge.svg)](https://github.com/ThobiasKnudsen/verztable/actions)
 
 ### Key Features
-- 🏆 **Beats Swiss Tables** on string keys and mixed workloads
-- 🗑️ **Tombstone-free deletion** — performance doesn't degrade after millions of deletes
-- 🔬 **SIMD-accelerated iteration** — vectorized metadata scanning
-- 📦 **Unified API** — same type works as map and set
-- ⚡ **Hash fragment filtering** — skips 15/16 of key comparisons on collisions
+- **Beats Swiss Tables** on string keys and mixed workloads
+- **Tombstone-free deletion** — performance doesn't degrade after millions of deletes
+- **SIMD-accelerated iteration** — vectorized metadata scanning
+- **Unified API** — same type works as map and set
+- **Hash fragment filtering** — skips 15/16 of key comparisons on collisions
 
 ![Benchmark comparison showing verztable performance vs Abseil, Boost, and Ankerl](docs/images/string_keys_mixed.png)
 
